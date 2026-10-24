@@ -1,7 +1,7 @@
 # usagi
 
 <p align="center">
-  <img src="docs/usagi.png" width="640" alt="usagi open on the media module: album art, track title, playback controls, a volume rail on the left and module dots on the right">
+  <img src="docs/usagi.svg" width="640" alt="usagi open on the media module: album art, track title, playback controls, a volume rail on the left and module dots on the right">
 </p>
 
 A desktop companion that lives in the top edge of your screen. He sleeps as a
@@ -25,7 +25,7 @@ everything you see. Runs on Windows, macOS and Linux.
 
 ```bash
 npm run dev       # run the app (first build takes a few minutes)
-npm run build     # installer for your OS → src-tauri/target/release/bundle/
+npm run build     # installer for your OS â†’ src-tauri/target/release/bundle/
 npm run preview   # UI only, in a browser at http://localhost:5179, with fake media
 ```
 
@@ -35,7 +35,7 @@ Launch at login, Hide when a fullscreen app is in front, Reload and Quit.
 ## How it's put together
 
 ```
-ui/                        everything you see — no build step
+ui/                        everything you see â€” no build step
   core/                    the framework; modules never need to touch this
     island.js              inactive / welcome / open + hit-testing
     face.js                the face and reaction blending
@@ -79,7 +79,7 @@ lines up with the notch, and it follows you across Spaces and fullscreen apps.
 export default {
   id: 'pomodoro',
   name: 'Pomodoro',
-  icon: icons.timer,           // 24×24 SVG string in currentColor
+  icon: icons.timer,           // 24Ã—24 SVG string in currentColor
   order: 4,                    // default position on first run
   styles: true,                // load ./style.css
   size: { w: 520, h: 224 },    // optional open size
@@ -114,10 +114,10 @@ A module that needs something new from the OS: add a `#[tauri::command]` in
 | | Windows 10/11 | macOS 12+ | Linux (X11) |
 |---|---|---|---|
 | Now playing + controls | Any app in the media flyout | Spotify, Apple Music | Any MPRIS player |
-| Album art | ✓ | Spotify | ✓ |
+| Album art | âœ“ | Spotify | âœ“ |
 | System volume | Core Audio | `osascript` | `wpctl` / `pactl` |
 | Music reaction | WASAPI loopback | Core Audio tap (14.2+, asks permission) | `parec` on the sink monitor |
-| Hide over fullscreen apps | ✓ | not yet | not yet |
+| Hide over fullscreen apps | âœ“ | not yet | not yet |
 
 Notes:
 - **macOS**: Apple locked the system-wide "now playing" API to its own apps in
