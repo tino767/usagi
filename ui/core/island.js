@@ -206,7 +206,7 @@ export function createIsland({ root, face, bridge }) {
       content.classList.add(kind === 'open' ? 'enter-late' : 'enter');
     },
     frame(kick, now = performance.now()) {
-      pill.style.setProperty('--pulse', (1 + kick * 0.36).toFixed(3));
+      pill.style.setProperty('--pulse', (1 - kick * 0.36).toFixed(3));
       if (background === 'dots' && dotsPulse && mode === 'open') {
         island.style.setProperty('--dot-a', (0.4 + kick * 0.35).toFixed(3));
       }

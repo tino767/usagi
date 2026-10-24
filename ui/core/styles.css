@@ -76,8 +76,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   background-image:
     linear-gradient(180deg, var(--ink) 0%, transparent 100%),
     radial-gradient(circle, rgba(255, 255, 255, var(--dot-a, .4)) 1.3px, transparent 1.7px);
-  background-size: 100% 100%, 32px 32px;
-  background-position: 0 0, 16px 16px;
+  background-size: 100% 100%, 38px 38px;
+  background-position: 0 0, center top;
 }
 [data-mode="open"] .island[data-bg="gradient"] {
   background-image: linear-gradient(180deg, var(--ink) 0%, var(--ink) 30%, var(--grad, #3a1f6b) 100%);
@@ -298,7 +298,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-bg-preview { align-self: stretch; height: 34px; border-radius: 10px; background: var(--ink); }
 .set-bg-preview.dots {
   background-image: linear-gradient(180deg, var(--ink) 0%, transparent 100%), radial-gradient(circle, #6e6e6e 1.2px, transparent 1.6px);
-  background-size: 100% 100%, 24px 24px; background-position: 0 0, 12px 12px;
+  background-size: 100% 100%, 28px 28px; background-position: 0 0, center top;
 }
 .set-bg-preview.gradient { background-image: linear-gradient(180deg, var(--ink) 10%, var(--grad, #3a1f6b) 100%); }
 
