@@ -43,17 +43,27 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 :focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
 
 /* ---------- island ---------- */
-.usagi { position: absolute; inset: 0; pointer-events: none; }
+/* --scale set by island.js; scales from the top edge so the island stays docked */
+.usagi {
+  position: absolute; inset: 0; pointer-events: none;
+  transform: scale(var(--scale, .8)); transform-origin: 50% 0;
+  transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+  /* hairline strokes: 1 screen px whatever the scale. A 1px border scales to
+     0.8px and lands on a different sub-pixel per edge, so sides render uneven.
+     Use as an inset box-shadow: Chrome floors border widths to whole pixels
+     before the transform, so calc() on border-width has no effect */
+  --hair: calc(1px / var(--scale, .8));
+}
 .island {
   pointer-events: auto;
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: var(--w, 84px);
+  width: var(--w, 76px);
   height: var(--h, 30px);
   background: var(--ink);
-  border-radius: 0 0 var(--r, 14px) var(--r, 14px);
+  border-radius: 0 0 var(--r, 15px) var(--r, 15px);
   transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease;
 }
 /* concave fillets that melt the island into the screen edge */
@@ -67,12 +77,21 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .pill, .peek, .tab, .content, .rail { display: none; }
 
 .pill {
-  position: absolute; left: 50%; top: 12px;
-  width: 28px; height: 6px; margin-left: -14px;
-  border-radius: 3px; background: var(--paper);
+  position: absolute; left: 50%; top: 11px;
+  width: 46px; height: 7px; margin-left: -23px;
+  border-radius: 3.5px; background: var(--paper);
   transform: scaleX(var(--pulse, 1));
 }
 [data-mode="inactive"] .pill { display: block; }
+
+.status {
+  display: none; position: absolute; inset: 0;
+  align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums;
+  color: var(--paper);
+}
+[data-mode="inactive"] .has-status .status { display: flex; }
+[data-mode="inactive"] .has-status .pill { display: none; }
 
 .peek {
   position: absolute; inset: 0;
@@ -80,11 +99,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   border-radius: inherit; color: var(--paper);
 }
 [data-mode="welcome"] .peek { display: flex; animation: fade .25s .12s both; }
-.peek .face { width: 144px; height: 32px; }
+/* same box as the tab face so the ㅅ lines up across open / close */
+.peek .face { width: 104px; height: 27px; }
 
 .tab {
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 160px; height: 48px;
+  width: 168px; height: 48px;
   align-items: center; justify-content: center;
   background: var(--paper); color: var(--ink);
   border-radius: 0 0 24px 24px;
@@ -155,7 +175,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .mgr-title { display: flex; align-items: baseline; gap: 10px; }
 .mgr-title > span:first-child { font-size: 15px; font-weight: 600; }
 .mgr-count, .mgr-label { font-size: 12px; color: var(--muted); }
-.mgr-rails { display: flex; align-items: center; gap: 4px; }
+.mgr-scale { display: flex; align-items: center; gap: 4px; }
 .mgr-label { margin-right: 4px; }
 .mgr-seg { height: 26px; padding: 0 10px; border-radius: 13px; font-size: 11px; font-weight: 500; background: var(--surface-2); color: #d6d6d6; }
 .mgr-seg[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
@@ -167,13 +187,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .mgr-card {
   display: flex; flex-direction: column; justify-content: space-between;
   padding: 12px 14px; text-align: left;
-  border-radius: 18px; border: 1px solid #2e2e2e; background: var(--surface); color: #ededed;
-  transition: background .2s, color .2s, border-color .2s;
+  border-radius: 18px; box-shadow: inset 0 0 0 var(--hair) #2e2e2e; background: var(--surface); color: #ededed;
+  transition: background .2s, color .2s, box-shadow .2s;
 }
 /* last-row corner cards follow the island's bottom curve */
 .mgr-card:nth-child(3n+1):nth-last-child(-n+3) { border-bottom-left-radius: var(--r-fit); padding-left: 22px; }
 .mgr-card:nth-child(3n):last-child { border-bottom-right-radius: var(--r-fit); }
-.mgr-card.on { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.mgr-card.on { background: var(--paper); box-shadow: inset 0 0 0 var(--hair) var(--paper); color: var(--ink); }
 .mgr-top { display: flex; align-items: center; justify-content: space-between; }
 .mgr-icon { width: 18px; height: 18px; }
 .mgr-state { font-size: 11px; font-weight: 500; color: #9a9a9a; }
@@ -184,6 +204,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 @keyframes enter { from { opacity: 0; transform: translateY(8px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .island, .ear, .face, .dot span { transition: none; }
+  .usagi, .island, .ear, .face, .dot span { transition: none; }
   .content.enter, .content.enter-late { animation: fade .15s both; }
 }

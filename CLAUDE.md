@@ -33,7 +33,7 @@ canvas to match. Visuals are owned by the canvas; behavior is owned by the code.
 
 ## Design rules
 
-- States: inactive (84×30 pill, r15), welcome (236×78, r39, eyes closed "= ㅅ ="), open (512×224, r80, white face tab 160×48 r24, eyes open "• ㅅ •"). Concave top fillets ("ears"): 22px (26px open), capped at h − r so they meet the bottom corner flush.
+- States: inactive (76×30 pill, r15, white bar 46×7; a module's `ctx.island.status(text)`, e.g. the running timer, replaces the white bar), welcome (168×48, r24, eyes closed "= ㅅ =", same footprint and face size as the open tab), open (512×224, r80, white face tab 168×48 r24, eyes open "• ㅅ •"). Concave top fillets ("ears"): 22px (26px open), capped at h − r so they meet the bottom corner flush.
 - Click the face to open; click it again to close. Scroll switches modules. The Modules page is always last.
 - Side rails sit outside the island: left = module's rail (volume for media), right = module icon + position dots.
 - Palette: island #000, paper #fff, surface #141414 / #1c1c1c, muted text #a6a6a6, tongue #E0606A. Font: Poppins 400/500/600 (bundled in `ui/fonts`).

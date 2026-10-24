@@ -89,6 +89,7 @@ export default {
 | `icons` | shared glyphs |
 | `face.flash(ms)` / `bounce(ms)` / `nod(ms)` / `tilt(deg)` | reactions |
 | `island.attention(ms)` | peek out even when the cursor is away |
+| `island.status(text)` | short text shown in place of the collapsed pill (`null` clears) |
 | `island.isFront()` / `open()` / `close()` | visibility and control |
 | `system.media` / `system.volume` | OS bridge |
 | `audio.bass` | current 0..1 bass level |

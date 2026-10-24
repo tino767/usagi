@@ -16,8 +16,10 @@ const bridge = createBridge();
 const store = createStore('usagi');
 const face = createFace();
 const island = createIsland({ root: document.getElementById('stage'), face, bridge });
-const contrast = createContrast({ island, bridge });
-contrast.set(store.get('rails', 'auto'));
+createContrast({ island, bridge });
+// UI scale, picked on the Modules page.
+const setScale = (value) => island.setScale(value);
+setScale(store.get('scale', 1));
 
 // ---- load modules from src/renderer/modules/<id>/index.js ----
 const found = [];
@@ -60,6 +62,7 @@ function makeCtx(id) {
       get mode() { return island.mode; },
       isFront: () => island.mode === 'open' && rotation.current() === id,
       attention: (ms) => island.attention(ms),
+      status: (text) => island.setStatus(id, text),
       open: () => { rotation.goTo(id); island.setMode('open'); },
       close: () => island.setMode('inactive'),
     },
@@ -70,7 +73,7 @@ function makeCtx(id) {
 }
 
 let rotation;
-catalog.set(SYSTEM_ID, createManager({ catalog, getRotation: () => rotation, store, contrast }));
+catalog.set(SYSTEM_ID, createManager({ catalog, getRotation: () => rotation, store, setScale }));
 rotation = createRotation({ island, store, catalog, makeCtx });
 rotation.start();
 

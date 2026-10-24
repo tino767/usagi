@@ -24,6 +24,7 @@ export default {
     // ctx.face.nod(ms)                   small dip
     // ctx.face.tilt(deg)                 hold a tilt (0 to reset)
     // ctx.island.attention(ms)           peek out even if the cursor is away
+    // ctx.island.status(text)            short text in place of the collapsed pill (null clears)
     // ctx.island.isFront()               is this module open right now?
     // ctx.island.open() / close()
     // ctx.system.media / ctx.system.volume   OS bridge (see ui/core/bridge.js)

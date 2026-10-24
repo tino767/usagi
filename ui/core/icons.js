@@ -17,6 +17,7 @@ export const icons = {
   next: s(`<path ${blob} d="M2.3 3.9 13.7 12 2.3 20.1z"/><rect fill="currentColor" x="16.8" y="2.4" width="6.4" height="19.2" rx="3.2"/>`),
   play: s(`<path ${blob} d="M6.5 4.4 19.5 12 6.5 19.6z"/>`),
   pause: s('<rect fill="currentColor" x="2.4" y="2.4" width="6.4" height="19.2" rx="2.4"/><rect fill="currentColor" x="15.2" y="2.4" width="6.4" height="19.2" rx="2.4"/>'),
+  stop: s('<rect fill="currentColor" x="4" y="4" width="16" height="16" rx="4"/>'),
   reset: s('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/>', stroke),
   spark: s('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>', stroke),
 };

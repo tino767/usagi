@@ -7,12 +7,10 @@ use std::time::Duration;
 use serde::Serialize;
 use tauri::{Emitter, LogicalSize, PhysicalPosition, WebviewWindow};
 
-/// Size of the overlay in CSS pixels. Wide enough for the open island + side rails.
+/// Size of the overlay in CSS pixels. Wide enough for the open island + side
+/// rails at the largest UI scale; the UI scales itself down inside it (island.js).
 pub const WIDTH: f64 = 760.0;
 pub const HEIGHT: f64 = 340.0;
-/// Overall scale of usagi on screen. The webview is zoomed and the window
-/// shrunk by the same factor, so the UI still lays out at WIDTH×HEIGHT.
-pub const ZOOM: f64 = 0.8;
 
 const CURSOR_POLL: Duration = Duration::from_millis(50);
 const GUARD_POLL: Duration = Duration::from_millis(1000);
@@ -27,7 +25,6 @@ struct Cursor {
 }
 
 pub fn install(window: &WebviewWindow) -> tauri::Result<()> {
-    window.set_zoom(ZOOM)?;
     place(window)?;
     window.set_always_on_top(true)?;
     window.set_visible_on_all_workspaces(true)?;
@@ -44,7 +41,6 @@ pub fn install(window: &WebviewWindow) -> tauri::Result<()> {
         let (Ok(c), Ok(p), Ok(s)) = (w.cursor_position(), w.outer_position(), w.scale_factor()) else {
             continue;
         };
-        let s = s * ZOOM;
         let _ = w.emit("cursor", Cursor { x: (c.x - p.x as f64) / s, y: (c.y - p.y as f64) / s });
     });
 
@@ -81,8 +77,8 @@ pub fn install(window: &WebviewWindow) -> tauri::Result<()> {
 pub fn place(window: &WebviewWindow) -> tauri::Result<()> {
     let Some(m) = window.primary_monitor()? else { return Ok(()) };
     let scale = m.scale_factor();
-    window.set_size(LogicalSize::new(WIDTH * ZOOM, HEIGHT * ZOOM))?;
-    let width = (WIDTH * ZOOM * scale).round() as i32;
+    window.set_size(LogicalSize::new(WIDTH, HEIGHT))?;
+    let width = (WIDTH * scale).round() as i32;
     let x = m.position().x + (m.size().width as i32 - width) / 2;
     window.set_position(PhysicalPosition::new(x, m.position().y))?;
     Ok(())

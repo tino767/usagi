@@ -1,7 +1,7 @@
 // Side-rail contrast. The rails sit outside the island, on whatever is behind
-// the window. "auto" samples the screen in thin strips around each rail (the
-// rail itself would just read back its own color) and gives each rail black or
-// white on its own; "dark" / "light" pin both.
+// the window, so while open this samples the screen in thin strips around each
+// rail (the rail itself would just read back its own color) and gives each rail
+// black or white on its own.
 
 const FIRST_MS = 300; // let the open transition mostly land before measuring
 const POLL_MS = 600;
@@ -13,7 +13,6 @@ const STRIP = 6;
 
 export function createContrast({ island, bridge }) {
   const rails = [island.railLeft, island.railRight];
-  let mode = 'auto';
   let supported = typeof bridge.backdrop === 'function';
   let timer = 0;
 
@@ -43,7 +42,6 @@ export function createContrast({ island, bridge }) {
       pin('dark');
       return;
     }
-    if (mode !== 'auto') return;
     let i = 0;
     groups.forEach((group, n) => {
       if (!group) return;
@@ -63,23 +61,13 @@ export function createContrast({ island, bridge }) {
     stop();
     const tick = async () => {
       await sample();
-      if (timer && mode === 'auto' && supported && island.mode === 'open') timer = setTimeout(tick, POLL_MS);
+      if (timer && supported && island.mode === 'open') timer = setTimeout(tick, POLL_MS);
     };
     timer = setTimeout(tick, FIRST_MS);
   }
 
   island.onMode((next) => {
-    if (next === 'open' && mode === 'auto' && supported) start();
+    if (next === 'open' && supported) start();
     else stop();
   });
-
-  return {
-    get mode() { return mode; },
-    set(value) {
-      mode = value;
-      if (value !== 'auto') { stop(); pin(value); }
-      else if (!supported) pin('dark');
-      else if (island.mode === 'open') start();
-    },
-  };
 }

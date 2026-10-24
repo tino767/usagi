@@ -5,6 +5,7 @@ import { icons } from '../../core/icons.js';
 
 const PRESETS = [5, 15, 25];
 const MAX = 99 * 60;
+const RING_MS = 1400;  // one chime (~0.8s) plus a beat of silence
 
 export default {
   id: 'timer',
@@ -20,6 +21,7 @@ export default {
     let endAt = 0;          // epoch ms while running
     let left = total;       // seconds while paused
     let loop = 0;
+    let alarm = 0;          // interval while the alarm rings
 
     const status = h('span', { class: 'eyebrow' });
     const time = h('span', { class: 't-time' });
@@ -45,8 +47,10 @@ export default {
       const secs = Math.ceil(r);
       time.textContent = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
       status.textContent = running() ? 'Running' : r <= 0 ? "Time's up" : r >= total ? 'Ready' : 'Paused';
-      playBtn.innerHTML = running() ? icons.pause : icons.play;
-      playBtn.setAttribute('aria-label', running() ? 'Pause timer' : 'Start timer');
+      playBtn.innerHTML = alarm ? icons.stop : running() ? icons.pause : icons.play;
+      playBtn.setAttribute('aria-label', alarm ? 'Stop alarm' : running() ? 'Pause timer' : 'Start timer');
+      playBtn.classList.toggle('t-ringing', !!alarm);
+      island.status(running() ? time.textContent : null);
       bar.style.width = `${Math.min(100, (1 - r / total) * 100)}%`;
       chips.forEach((c, i) => c.setAttribute('aria-pressed', String(total === PRESETS[i] * 60)));
     }
@@ -67,16 +71,21 @@ export default {
       tick();
     }
     function pause() {
+      silence();
       left = remaining();
       endAt = 0;
       clearInterval(loop);
       face.tilt(0);
       render();
     }
-    function toggle() { running() ? pause() : start(); }
+    function toggle() {
+      if (alarm) { silence(); left = total; render(); return; }
+      running() ? pause() : start();
+    }
     function reset() { pause(); left = total; render(); }
     function preset(min) { pause(); total = left = min * 60; store.set('total', total); render(); }
     function bump(d) {
+      silence();
       const wasFull = remaining() >= total;
       total = Math.max(60, Math.min(MAX, total + d));
       store.set('total', total);
@@ -90,16 +99,18 @@ export default {
       endAt = 0;
       left = 0;
       face.tilt(0);
-      face.bounce(2600);
-      island.attention(3500);
-      chime();
+      // Ring until the play/pause button (or reset / a preset) stops it.
+      const ring = () => { face.bounce(RING_MS); island.attention(RING_MS + 200); chime(); };
+      ring();
+      alarm = setInterval(ring, RING_MS);
       render();
     }
+    function silence() { clearInterval(alarm); alarm = 0; }
 
     render();
     return {
       el,
-      destroy() { clearInterval(loop); face.tilt(0); },
+      destroy() { clearInterval(loop); silence(); face.tilt(0); island.status(null); },
     };
   },
 };

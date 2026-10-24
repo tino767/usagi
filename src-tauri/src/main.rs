@@ -103,7 +103,7 @@ struct CssRect {
 #[tauri::command]
 async fn backdrop_luma(window: WebviewWindow, rects: Vec<CssRect>) -> Result<Vec<f32>, String> {
     let origin = window.outer_position().map_err(|e| e.to_string())?;
-    let s = window.scale_factor().map_err(|e| e.to_string())? * overlay::ZOOM;
+    let s = window.scale_factor().map_err(|e| e.to_string())?;
     let rects: Vec<system::Rect> = rects
         .iter()
         .map(|r| system::Rect {

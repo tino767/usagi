@@ -1,9 +1,15 @@
-.t-root { display: flex; flex-direction: column; justify-content: center; gap: 14px; height: 100%; }
+/* top-aligned like the other modules, which also keeps the bottom row clear of the island's r80 corners */
+.t-root { display: flex; flex-direction: column; gap: 14px; height: 100%; }
 .t-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .t-readout { display: flex; flex-direction: column; }
 .t-time { font-size: 50px; font-weight: 600; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .t-controls { display: flex; align-items: center; gap: 6px; }
 .t-step { height: 40px; border-radius: 20px; font-size: 13px; }
+/* same size as the media play button */
+.t-controls .btn-round { width: 48px; height: 48px; }
+.t-controls .btn-round svg { width: 24px; height: 24px; }
+/* stop square while the alarm rings, in usagi's tongue color */
+.t-controls .btn-round.t-ringing { color: var(--tongue); }
 .t-reset svg { width: 20px; height: 20px; }
 .t-bottom { display: flex; align-items: center; gap: 8px; }
 .t-bar { flex: 1; height: 4px; margin-left: 8px; border-radius: 2px; background: #262626; overflow: hidden; }

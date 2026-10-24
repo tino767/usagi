@@ -1,11 +1,13 @@
 // The built-in "Modules" page. Always last in the rotation; can't be removed.
-// Adds/removes modules from the list and holds a couple of preferences.
+// Adds/removes modules from the list and holds the UI scale preference.
 
 import { h } from './dom.js';
 import { icons } from './icons.js';
 import { SYSTEM_ID } from './rotation.js';
 
-export function createManager({ catalog, getRotation, store, contrast }) {
+const SCALES = [0.75, 1, 1.25];
+
+export function createManager({ catalog, getRotation, store, setScale }) {
   return {
     id: SYSTEM_ID,
     name: 'Modules',
@@ -15,19 +17,20 @@ export function createManager({ catalog, getRotation, store, contrast }) {
       const count = h('span', { class: 'mgr-count' });
       const grid = h('div', { class: 'mgr-grid' });
 
-      const railBtns = ['auto', 'dark', 'light'].map((value) =>
+      const scaleBtns = SCALES.map((value) =>
         h('button', {
           class: 'mgr-seg',
-          'aria-label': value === 'auto' ? 'Side rails match the background' : `${value} side rails`,
-          onclick: () => { setRail(value); ctx.face.nod(); },
-        }, value[0].toUpperCase() + value.slice(1)));
+          'aria-label': `${value * 100}% size`,
+          onclick: () => { pickScale(value); ctx.face.nod(); },
+        }, `${value * 100}%`));
 
-      function setRail(value) {
-        store.set('rails', value);
-        contrast.set(value);
-        railBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === value)));
+      const markScale = (value) => scaleBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(SCALES[i] === value)));
+      function pickScale(value) {
+        store.set('scale', value);
+        setScale(value);
+        markScale(value);
       }
-      setRail(contrast.mode);
+      markScale(store.get('scale', 1));
 
       function render() {
         const rotation = getRotation();
@@ -54,8 +57,8 @@ export function createManager({ catalog, getRotation, store, contrast }) {
       const el = h('div', { class: 'mgr' },
         h('div', { class: 'mgr-head' },
           h('div', { class: 'mgr-title' }, h('span', {}, 'Modules'), count),
-          h('div', { class: 'mgr-rails', role: 'group', 'aria-label': 'Side rail color' },
-            h('span', { class: 'mgr-label' }, 'Rails'), ...railBtns)),
+          h('div', { class: 'mgr-scale', role: 'group', 'aria-label': 'UI scale' },
+            h('span', { class: 'mgr-label' }, 'Scale'), ...scaleBtns)),
         grid);
 
       render();
