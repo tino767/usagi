@@ -36,6 +36,16 @@ function createTauriBridge() {
     onToggle: (fn) => on('toggle', fn),
     onAudio: (fn) => on('audio', fn),
     backdrop: (rects) => invoke('backdrop_luma', { rects }),
+    glass: {
+      // onFrame gets an ArrayBuffer: [w u16, h u16] + BGRA pixels, whenever the screen behind changes
+      start: (rect, w, h, onFrame) => {
+        const frames = new tauri.core.Channel();
+        frames.onmessage = onFrame;
+        return invoke('glass_start', { frames, rect, outW: w, outH: h });
+      },
+      move: (rect, w, h) => invoke('glass_move', { rect, outW: w, outH: h }),
+      stop: () => invoke('glass_stop'),
+    },
     setHideFullscreen: (on) => invoke('set_hide_fullscreen', { on: !!on }),
     autostart: {
       get: () => invoke('autostart_get'),

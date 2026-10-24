@@ -97,3 +97,16 @@ pub fn set_volume(v: f32) -> Result<(), String> {
 pub fn backdrop_luma(_rects: &[Rect]) -> Result<Vec<f32>, String> {
     Err("unsupported".into())
 }
+
+/// Live copies of the screen under a rect, for the glass background.
+pub struct Backdrop;
+
+impl Backdrop {
+    pub fn open(_at: Rect) -> Result<Self, String> {
+        Err("unsupported".into())
+    }
+
+    pub fn next(&mut self, _r: Rect, _w: i32, _h: i32, _force: bool) -> Result<Option<Vec<u8>>, String> {
+        Ok(None)
+    }
+}

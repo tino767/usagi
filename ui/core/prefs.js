@@ -4,9 +4,10 @@
 export const DEFAULTS = {
   scale: 1,                // UI scale: 0.75 | 1 | 1.25
   rail: 'auto',            // side rails: 'auto' | 'light' | 'dark'
-  background: 'solid',     // open island: 'solid' | 'dots' | 'gradient'
+  background: 'solid',     // open island: 'solid' | 'dots' | 'gradient' | 'glass'
   gradient: '#3a1f6b',     // bottom color of the gradient background
   dotsPulse: true,         // dot matrix brightens on the kick
+  glassPerformance: false, // glass without the blur or screen capture, just see-through
   face: 'idle',            // 'always' (face stays up) | 'idle' (slides away when idle)
   faceDelay: 5,            // seconds before the face slides away
   hideFullscreen: true,    // hide over fullscreen apps (Windows)

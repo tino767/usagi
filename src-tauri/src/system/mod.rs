@@ -4,6 +4,8 @@
 //   media_command(cmd) -> "toggle" | "next" | "prev"
 //   volume() / set_volume(v)   master output volume, 0.0..=1.0
 //   backdrop_luma(rects) -> mean relative luminance (0..1) of each screen rect
+//   Backdrop::open(at) / next(rect, w, h, force) -> live copies of the screen
+//     under rect, shrunk to w×h BGRA, as it changes (glass background)
 
 use serde::Serialize;
 
@@ -20,7 +22,7 @@ pub struct Media {
 }
 
 /// A rectangle on screen, in physical pixels.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rect {
     pub x: i32,
     pub y: i32,
@@ -58,6 +60,11 @@ mod fallback {
     pub fn volume() -> Result<f32, String> { Err("unsupported".into()) }
     pub fn set_volume(_v: f32) -> Result<(), String> { Err("unsupported".into()) }
     pub fn backdrop_luma(_rects: &[super::Rect]) -> Result<Vec<f32>, String> { Err("unsupported".into()) }
+    pub struct Backdrop;
+    impl Backdrop {
+        pub fn open(_at: super::Rect) -> Result<Self, String> { Err("unsupported".into()) }
+        pub fn next(&mut self, _r: super::Rect, _w: i32, _h: i32, _f: bool) -> Result<Option<Vec<u8>>, String> { Ok(None) }
+    }
 }
 #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 pub use fallback::*;

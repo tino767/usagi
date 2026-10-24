@@ -73,6 +73,13 @@ pub fn install(window: &WebviewWindow) -> tauri::Result<()> {
     Ok(())
 }
 
+/// Keep usagi out of screen captures (and screenshots, screen shares) so
+/// copying the screen under the island returns what's behind it. On while the
+/// glass background is picked.
+pub fn set_capture_hidden(window: &WebviewWindow, on: bool) -> Result<(), String> {
+    platform::set_capture_hidden(window, on)
+}
+
 /// Top center of the primary display, flush with the top edge.
 pub fn place(window: &WebviewWindow) -> tauri::Result<()> {
     let Some(m) = window.primary_monitor()? else { return Ok(()) };
@@ -91,7 +98,8 @@ mod platform {
         SHQueryUserNotificationState, QUNS_BUSY, QUNS_PRESENTATION_MODE, QUNS_RUNNING_D3D_FULL_SCREEN,
     };
     use windows::Win32::UI::WindowsAndMessaging::{
-        SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE,
+        SetWindowDisplayAffinity, SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER,
+        SWP_NOSIZE, WDA_EXCLUDEFROMCAPTURE, WDA_NONE,
     };
 
     pub fn raise(window: &WebviewWindow) {
@@ -113,6 +121,13 @@ mod platform {
                 );
             }
         }
+    }
+
+    /// Windows 10 2004+; older versions refuse WDA_EXCLUDEFROMCAPTURE.
+    pub fn set_capture_hidden(window: &WebviewWindow, on: bool) -> Result<(), String> {
+        let hwnd = window.hwnd().map_err(|e| e.to_string())?;
+        unsafe { SetWindowDisplayAffinity(hwnd, if on { WDA_EXCLUDEFROMCAPTURE } else { WDA_NONE }) }
+            .map_err(|e| e.to_string())
     }
 
     pub fn fullscreen_app_in_front() -> bool {
@@ -150,6 +165,10 @@ mod platform {
 
     pub fn reassert_topmost(_window: &WebviewWindow) {}
 
+    pub fn set_capture_hidden(_window: &WebviewWindow, _on: bool) -> Result<(), String> {
+        Err("unsupported".into())
+    }
+
     // TODO: detect fullscreen apps on macOS (CGWindowList bounds vs. screen).
     pub fn fullscreen_app_in_front() -> bool {
         false
@@ -163,6 +182,10 @@ mod platform {
     pub fn raise(_window: &WebviewWindow) {}
 
     pub fn reassert_topmost(_window: &WebviewWindow) {}
+
+    pub fn set_capture_hidden(_window: &WebviewWindow, _on: bool) -> Result<(), String> {
+        Err("unsupported".into())
+    }
 
     // TODO: _NET_WM_STATE_FULLSCREEN on the active X11 window.
     pub fn fullscreen_app_in_front() -> bool {

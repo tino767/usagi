@@ -71,16 +71,45 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .island.tucked { --tuck: 40px; }
 
 /* open-island backgrounds (Settings › Appearance) */
-/* an ink veil over the dots fades them in from the top */
+/* an ink veil over the dots fades them in from the top; it never fully clears,
+   so the bottom rows stay dim */
 [data-mode="open"] .island[data-bg="dots"] {
   background-image:
-    linear-gradient(180deg, var(--ink) 0%, transparent 100%),
+    linear-gradient(180deg, var(--ink) 0%, color-mix(in srgb, var(--ink) 50%, transparent) 100%),
     radial-gradient(circle, rgba(255, 255, 255, var(--dot-a, .4)) 1.3px, transparent 1.7px);
   background-size: 100% 100%, 38px 38px;
   background-position: 0 0, center top;
 }
 [data-mode="open"] .island[data-bg="gradient"] {
   background-image: linear-gradient(180deg, var(--ink) 0%, var(--ink) 30%, var(--grad, #3a1f6b) 100%);
+}
+/* glass: the screen behind the island, blurred (glass.js), under a veil that is
+   solid ink at the top so the island still melts into the screen edge and the
+   ears, easing to lighter frosted glass toward the bottom. glass.js sets --veil
+   from how bright the backdrop is; without a live backdrop (performance mode,
+   or no OS support) it stays a plain see-through smoke */
+@property --veil { syntax: '<number>'; inherits: true; initial-value: .84; }
+[data-mode="open"] .island[data-bg="glass"] { background: transparent; }
+.frost {
+  display: none; position: absolute; inset: 0; overflow: hidden;
+  border-radius: inherit; pointer-events: none;
+  transition: --veil .6s ease;
+}
+[data-mode="open"] .island[data-bg="glass"] .frost { display: block; }
+/* oversized so the blur doesn't darken toward the clipped edges. Hidden by
+   visibility, not display: glass.js measures it to know what to copy */
+.frost canvas {
+  visibility: hidden; position: absolute; left: -24px; top: -24px;
+  width: calc(100% + 48px); height: calc(100% + 48px);
+  filter: blur(10px) saturate(1.5);
+}
+.frost.live canvas { visibility: visible; }
+.frost::after {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(180deg, transparent 35%, rgba(255, 255, 255, .08) 100%),
+    linear-gradient(180deg, var(--ink) 0%, var(--ink) 20%, rgba(0, 0, 0, calc(var(--veil) + .3)) 40%,
+      rgba(0, 0, 0, calc(var(--veil) + .15)) 65%, rgba(0, 0, 0, calc(var(--veil) + .1)) 100%);
 }
 /* concave fillets that melt the island into the screen edge */
 .ear {
@@ -285,7 +314,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-switch[aria-checked="true"]::after { left: 19px; background: var(--ink); }
 .set-switch:disabled { opacity: .4; cursor: default; }
 
-.set-bgs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.set-bgs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .set-bg {
   height: 72px; padding: 8px; border-radius: 16px;
   display: flex; flex-direction: column; justify-content: space-between; align-items: center;
@@ -297,10 +326,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-bg[aria-checked="true"] { background: var(--paper); color: var(--ink); }
 .set-bg-preview { align-self: stretch; height: 34px; border-radius: 10px; background: var(--ink); }
 .set-bg-preview.dots {
-  background-image: linear-gradient(180deg, var(--ink) 0%, transparent 100%), radial-gradient(circle, #6e6e6e 1.2px, transparent 1.6px);
+  background-image: linear-gradient(180deg, var(--ink) 0%, color-mix(in srgb, var(--ink) 50%, transparent) 100%), radial-gradient(circle, #6e6e6e 1.2px, transparent 1.6px);
   background-size: 100% 100%, 28px 28px; background-position: 0 0, center top;
 }
 .set-bg-preview.gradient { background-image: linear-gradient(180deg, var(--ink) 10%, var(--grad, #3a1f6b) 100%); }
+/* a stand-in wallpaper behind the smoke shows that it's see-through */
+.set-bg-preview.glass {
+  background-image: linear-gradient(180deg, var(--ink) 10%, rgba(0, 0, 0, .6) 100%), linear-gradient(115deg, #7d9cff, #e0606a 60%, #f2b46b);
+}
 
 .set-swatches { display: flex; align-items: center; gap: 6px; padding-right: 4px; }
 .set-swatch { width: 24px; height: 24px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }

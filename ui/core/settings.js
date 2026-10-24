@@ -21,7 +21,7 @@ const CONTENT_PAD = 62 + 22;
 const CONTENT_W = 512 - 22 - 22;
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const RAILS = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
-const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient']];
+const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient'], ['glass', 'Glass']];
 const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
 const DELAYS = [3, 5, 10];
 // Gradient colors are capped at this relative luminance so white text on the
@@ -255,10 +255,13 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
           options = group(row('Dots pulse with the beat', toggle('Dots pulse with the beat', prefs.get('dotsPulse'), (v) => { prefs.set('dotsPulse', v); render(); })));
         } else if (bg === 'gradient') {
           options = group(colorRow('Gradient color', 'gradient', SWATCHES, capLuma));
+        } else if (bg === 'glass') {
+          options = group(row('Performance mode', toggle('Performance mode', prefs.get('glassPerformance'), (v) => { prefs.set('glassPerformance', v); render(); }),
+            { sub: 'No blur or screen capture, just see-through' }));
         }
 
         return h('div', { class: 'set-page' }, header(titleEl('Appearance')),
-          scroll(['Reset appearance', ['scale', 'rail', 'background', 'gradient', 'dotsPulse']],
+          scroll(['Reset appearance', ['scale', 'rail', 'background', 'gradient', 'dotsPulse', 'glassPerformance']],
             group(
               row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v))),
               row('Side rails', seg('Side rails', RAILS, prefs.get('rail'), (v) => prefs.set('rail', v)))),

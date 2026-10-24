@@ -62,6 +62,8 @@ export function createIsland({ root, face, bridge }) {
   face.mount(peekFace, 'closed');
   face.mount(tabFace, 'open');
 
+  // glass background: the blurred screen behind the island (drawn by glass.js)
+  const frost = h('canvas');
   const pill = h('div', { class: 'pill' });
   // Short text a module can show in place of the pill while inactive (a running timer...).
   const status = h('span', { class: 'status' });
@@ -71,7 +73,7 @@ export function createIsland({ root, face, bridge }) {
   const content = h('div', { class: 'content' });
   const railLeft = h('div', { class: 'rail rail-left' });
   const railRight = h('div', { class: 'rail rail-right' });
-  const island = h('div', { class: 'island' }, svg(EAR_L), svg(EAR_R), pill, status, peek, tab, content, railLeft, railRight);
+  const island = h('div', { class: 'island' }, svg(EAR_L), svg(EAR_R), h('div', { class: 'frost' }, frost), pill, status, peek, tab, content, railLeft, railRight);
   const el = h('div', { class: 'usagi', 'data-mode': mode }, island);
   root.append(el);
 
@@ -156,6 +158,7 @@ export function createIsland({ root, face, bridge }) {
     content,
     railLeft,
     railRight,
+    frost,
     get mode() { return mode; },
     setMode,
     toggle() { setMode(mode === 'open' ? 'inactive' : 'open'); },
@@ -192,7 +195,7 @@ export function createIsland({ root, face, bridge }) {
       if (facePinned) setTucked(false);
       lastTop = performance.now();
     },
-    /** Open-island background: 'solid' | 'dots' | 'gradient', plus the gradient's bottom color. */
+    /** Open-island background: 'solid' | 'dots' | 'gradient' | 'glass', plus the gradient's bottom color. */
     setBackground(kind, color, pulse) {
       background = kind;
       dotsPulse = !!pulse;
