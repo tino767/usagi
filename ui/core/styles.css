@@ -197,7 +197,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   min-width: 0; padding: 0 10px 6px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
   text-align: center; border-radius: 18px;
-  background: var(--surface); box-shadow: inset 0 0 0 var(--hair) #262626;
+  background: var(--surface);
   transition: background .2s, transform .15s ease-out;
 }
 .set-tile:hover { background: #1a1a1a; }
@@ -240,7 +240,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-mod {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
   border-radius: 18px; background: var(--surface); color: #d6d6d6;
-  box-shadow: inset 0 0 0 var(--hair) #262626; font-size: 12px; font-weight: 500;
+  font-size: 12px; font-weight: 500;
   transition: background .2s, color .2s;
 }
 .set-mod:hover { background: #1a1a1a; }
@@ -277,10 +277,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-bg {
   height: 72px; padding: 8px; border-radius: 16px;
   display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
-  background: var(--surface); color: #d6d6d6; box-shadow: inset 0 0 0 var(--hair) #2a2a2a;
+  background: var(--surface); color: #d6d6d6;
+  transition: background .2s, color .2s;
   font-size: 12px; font-weight: 500;
 }
-.set-bg[aria-checked="true"] { color: var(--paper); box-shadow: inset 0 0 0 2px var(--paper); }
+.set-bg:hover { background: #1a1a1a; }
+.set-bg[aria-checked="true"] { background: var(--paper); color: var(--ink); }
 .set-bg-preview { align-self: stretch; height: 34px; border-radius: 10px; background: var(--ink); }
 .set-bg-preview.dots {
   background-image: linear-gradient(180deg, var(--ink) 0%, transparent 100%), radial-gradient(circle, #6e6e6e 1.2px, transparent 1.6px);

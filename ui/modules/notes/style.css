@@ -3,12 +3,12 @@
 .n-head label { font-weight: 500; }
 .n-area {
   flex: 1; min-height: 0; width: 100%; box-sizing: border-box; resize: none;
-  padding: 12px 22px 20px; border: 0; box-shadow: inset 0 0 0 var(--hair) var(--line);
+  padding: 12px 22px 20px; border: 0;
   border-radius: 16px 16px var(--r-fit) var(--r-fit); /* concentric with the island */
   background: var(--surface); color: var(--paper);
   font: 400 14px/1.5 var(--font); user-select: text;
 }
 .n-area::placeholder { color: #8a8a8a; }
-.n-area { transition: box-shadow .2s; }
-/* typing is the main use, so focus is a quiet border lift, not a white ring */
-.n-area:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--hair) #5c5c5c; }
+.n-area { transition: background .2s; }
+/* typing is the main use, so focus is a quiet surface lift, not a white ring */
+.n-area:focus-visible { outline: none; background: #1a1a1a; }
