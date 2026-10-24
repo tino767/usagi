@@ -1,5 +1,9 @@
-/* top-aligned like the other modules, which also keeps the bottom row clear of the island's r80 corners */
-.t-root { display: flex; flex-direction: column; gap: 14px; height: 100%; }
+/* readout and controls on top, presets and progress on the bottom edge.
+   13px further in than the content (35px from the island's sides and bottom):
+   that puts the bottom chips' r15 ends 22px inside the island's r80 corners,
+   the same gap the content keeps from the straight edges; the top row shares
+   the side inset so both rows line up */
+.t-root { display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0 13px 13px; box-sizing: border-box; }
 .t-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .t-readout { display: flex; flex-direction: column; }
 .t-time { font-size: 50px; font-weight: 600; line-height: 1.05; font-variant-numeric: tabular-nums; }
@@ -13,4 +17,4 @@
 .t-reset svg { width: 20px; height: 20px; }
 .t-bottom { display: flex; align-items: center; gap: 8px; }
 .t-bar { flex: 1; height: 4px; margin-left: 8px; border-radius: 2px; background: #262626; overflow: hidden; }
-.t-bar-fill { height: 100%; width: 0; background: var(--paper); transition: width .25s linear; }
+.t-bar-fill { height: 100%; transform: scaleX(0); transform-origin: left; background: var(--paper); transition: transform .25s linear; }

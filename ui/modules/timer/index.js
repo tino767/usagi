@@ -51,7 +51,7 @@ export default {
       playBtn.setAttribute('aria-label', alarm ? 'Stop alarm' : running() ? 'Pause timer' : 'Start timer');
       playBtn.classList.toggle('t-ringing', !!alarm);
       island.status(running() ? time.textContent : null);
-      bar.style.width = `${Math.min(100, (1 - r / total) * 100)}%`;
+      bar.style.transform = `scaleX(${Math.min(1, 1 - r / total)})`;
       chips.forEach((c, i) => c.setAttribute('aria-pressed', String(total === PRESETS[i] * 60)));
     }
 
