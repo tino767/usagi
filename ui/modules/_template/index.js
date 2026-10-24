@@ -1,0 +1,60 @@
+// Copy this folder to src/renderer/modules/<your-id>/ (no leading underscore),
+// change `id` to match the folder name, restart usagi, then add it from the
+// Modules page. Folders starting with "_" are ignored by the loader.
+
+import { icons } from '../../core/icons.js';
+
+export default {
+  id: '_template',               // must equal the folder name
+  name: 'Counter',               // shown on the Modules page and in aria labels
+  description: 'An example module', // tooltip on the Modules page
+  icon: icons.spark,             // 24×24 SVG string in currentColor, shown in the position rail
+  order: 10,                     // default position on first run
+  styles: false,                 // true → loads ./style.css next to this file
+  // size: { w: 520, h: 224 },   // optional open-island size for this module
+
+  // Called once when the module joins the rotation (also at startup), and it
+  // keeps living while other modules are showing — timers, listeners and
+  // background work belong here.
+  create(ctx) {
+    const { h, face, store } = ctx;
+    // ctx.h(tag, props, ...children)    DOM helper
+    // ctx.icons                          shared glyphs
+    // ctx.face.flash(ms)                 tongue out
+    // ctx.face.bounce(ms)                hop
+    // ctx.face.nod(ms)                   small dip
+    // ctx.face.tilt(deg)                 hold a tilt (0 to reset)
+    // ctx.island.attention(ms)           peek out even if the cursor is away
+    // ctx.island.isFront()               is this module open right now?
+    // ctx.island.open() / close()
+    // ctx.system.media / ctx.system.volume   OS bridge (see ui/core/bridge.js)
+    // ctx.audio.bass                     current 0..1 bass level
+    // ctx.store.get(key, fallback) / set(key, value)   persisted, scoped to this module
+
+    let count = store.get('count', 0);
+    const label = h('span', { style: { fontSize: '40px', fontWeight: '600' } }, String(count));
+    const button = h('button', {
+      class: 'btn-round',
+      'aria-label': 'Add one',
+      html: icons.spark,
+      onclick: () => {
+        count += 1;
+        label.textContent = String(count);
+        store.set('count', count);
+        face.flash(400);
+      },
+    });
+
+    const el = h('div', {
+      style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' },
+    }, label, button);
+
+    return {
+      el,              // required: the panel content (460×140 by default)
+      // rail,         // optional: element for the left side rail (see media)
+      show() {},       // optional: became visible
+      hide() {},       // optional: hidden (island closed or scrolled away)
+      destroy() {},    // optional: removed from the rotation — clean up timers/listeners
+    };
+  },
+};

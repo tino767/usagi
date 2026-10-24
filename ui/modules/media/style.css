@@ -1,0 +1,19 @@
+/* the cover sits 48px from the island's left and bottom edges, so its corner
+   (r32) runs concentric with the island's (r80) */
+.m-root { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 15px 0 18px; }
+.m-art {
+  width: 88px; height: 88px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 32px; background: #ececec center / cover no-repeat; color: #8a8a8a;
+}
+.m-art svg { width: 30px; height: 30px; }
+.m-art.has-art svg { display: none; }
+.m-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.m-title, .m-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-title { font-size: 16px; font-weight: 600; }
+.m-artist { font-size: 13px; color: var(--muted); }
+.m-controls { display: flex; align-items: center; gap: 5px; }
+.m-controls .btn-round { width: 48px; height: 48px; }
+.m-controls svg { width: 24px; height: 24px; }
+.m-controls button:disabled { opacity: .35; cursor: default; }
+.m-vol { display: flex; flex-direction: column; align-items: center; }

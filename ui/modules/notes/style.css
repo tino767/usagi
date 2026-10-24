@@ -1,0 +1,11 @@
+.n-root { display: flex; flex-direction: column; gap: 8px; height: 100%; }
+.n-head { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.n-head label { font-weight: 500; }
+.n-area {
+  flex: 1; min-height: 0; width: 100%; box-sizing: border-box; resize: none;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px;
+  background: var(--surface); color: var(--paper);
+  font: 400 14px/1.5 var(--font); user-select: text;
+}
+.n-area::placeholder { color: #8a8a8a; }
+.n-area:focus-visible { outline: 2px solid var(--paper); outline-offset: 1px; }

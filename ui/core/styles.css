@@ -1,0 +1,178 @@
+@font-face { font-family: 'Poppins'; font-weight: 400; font-display: swap; src: url('../fonts/poppins-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 500; font-display: swap; src: url('../fonts/poppins-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 600; font-display: swap; src: url('../fonts/poppins-latin-600-normal.woff2') format('woff2'); }
+
+/* ---------- tokens ---------- */
+:root {
+  --ink: #000000;          /* the island */
+  --paper: #ffffff;        /* face tab, primary buttons */
+  --surface: #141414;      /* inputs inside the island */
+  --surface-2: #1c1c1c;    /* secondary buttons */
+  --line: #2b2b2b;
+  --muted: #a6a6a6;        /* secondary text on ink (8.4:1) */
+  --tongue: #E0606A;
+  --rail-fg: #000000;      /* side rails sit on the wallpaper */
+  --rail-dim: #9c9c9c;
+  --rail-track: #b9b9b9;
+  --spring: cubic-bezier(.34, 1.3, .5, 1);
+  --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+/* set per rail by core/contrast.js */
+[data-rail="light"] {
+  --rail-fg: #ffffff;
+  --rail-dim: rgba(255, 255, 255, .45);
+  --rail-track: rgba(255, 255, 255, .3);
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: var(--font);
+  color: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+
+/* ---------- island ---------- */
+.usagi { position: absolute; inset: 0; pointer-events: none; }
+.island {
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--w, 84px);
+  height: var(--h, 30px);
+  background: var(--ink);
+  border-radius: 0 0 var(--r, 14px) var(--r, 14px);
+  transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease;
+}
+/* concave fillets that melt the island into the screen edge */
+.ear {
+  position: absolute; top: 0; width: var(--ear, 22px); height: var(--ear, 22px); fill: var(--ink); overflow: visible;
+  transition: width .5s var(--spring), height .5s var(--spring), left .5s var(--spring), right .5s var(--spring);
+}
+.ear-l { left: calc(-1 * var(--ear, 22px)); }
+.ear-r { right: calc(-1 * var(--ear, 22px)); }
+
+.pill, .peek, .tab, .content, .rail { display: none; }
+
+.pill {
+  position: absolute; left: 50%; top: 12px;
+  width: 28px; height: 6px; margin-left: -14px;
+  border-radius: 3px; background: var(--paper);
+  transform: scaleX(var(--pulse, 1));
+}
+[data-mode="inactive"] .pill { display: block; }
+
+.peek {
+  position: absolute; inset: 0;
+  align-items: center; justify-content: center;
+  border-radius: inherit; color: var(--paper);
+}
+[data-mode="welcome"] .peek { display: flex; animation: fade .25s .12s both; }
+.peek .face { width: 144px; height: 32px; }
+
+.tab {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 160px; height: 48px;
+  align-items: center; justify-content: center;
+  background: var(--paper); color: var(--ink);
+  border-radius: 0 0 24px 24px;
+}
+[data-mode="open"] .tab { display: flex; }
+.tab .face { width: 104px; height: 27px; }
+.tab:focus-visible { outline-color: var(--paper); outline-offset: 3px; }
+
+.face { display: block; line-height: 0; transition: transform 90ms linear; }
+.face svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.face .tongue { opacity: 0; transition: opacity .15s ease; }
+.face.tongue-out .tongue { opacity: 1; }
+
+.content { position: absolute; left: 30px; right: 30px; top: 62px; bottom: 22px; }
+[data-mode="open"] .content { display: block; }
+.content.enter { animation: enter .3s var(--spring) both; }
+.content.enter-late { animation: enter .32s var(--spring) .18s both; }
+
+/* ---------- side rails ---------- */
+.rail { position: absolute; top: 74px; width: 24px; flex-direction: column; align-items: center; color: var(--rail-fg); transition: color .2s; }
+[data-mode="open"] .rail { display: flex; animation: fade .3s .2s both; }
+.rail-left { left: -29px; }
+.rail-left:empty { display: none !important; }
+.rail-right { right: -29px; }
+.rail-right .rail-icon { margin-bottom: 3px; }
+.rail-icon { width: 20px; height: 20px; margin-bottom: 5px; }
+
+.dot { width: 24px; padding: 2.5px 0; display: flex; align-items: center; justify-content: center; }
+.dot span { width: 8px; height: 8px; border-radius: 4px; background: var(--rail-dim); transition: height .3s var(--spring), background .2s; }
+.dot.on span { height: 24px; background: var(--rail-fg); }
+.dot:focus-visible { outline-color: var(--rail-fg); }
+
+/* vertical slider any module can use in its rail */
+.vslider { position: relative; width: 24px; height: 62px; border-radius: 6px; }
+.vslider::before { content: ''; position: absolute; left: 8px; top: 0; width: 8px; height: 100%; border-radius: 4px; background: var(--rail-track); transition: background .2s; }
+.vslider-fill { position: absolute; left: 8px; bottom: 0; width: 8px; height: var(--value, 50%); border-radius: 4px; background: var(--rail-fg); transition: background .2s; }
+.vslider input { position: absolute; inset: 0; width: 24px; height: 62px; margin: 0; opacity: 0; cursor: ns-resize; writing-mode: vertical-lr; direction: rtl; }
+.vslider:focus-within { outline: 2px solid var(--rail-fg); outline-offset: 3px; }
+
+/* ---------- shared module parts ---------- */
+.btn-round {
+  width: 56px; height: 56px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--paper); color: var(--ink);
+}
+.btn-round svg { width: 22px; height: 22px; }
+.btn-ghost {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; color: var(--paper);
+}
+.btn-ghost svg { width: 22px; height: 22px; }
+.btn-ghost:hover { background: var(--surface-2); }
+.chip {
+  height: 30px; padding: 0 12px; border-radius: 15px;
+  background: var(--surface-2); color: #d6d6d6; font-size: 12px; font-weight: 500;
+}
+.chip[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
+.eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.module-error { font-size: 13px; color: var(--muted); }
+
+/* ---------- Modules page ---------- */
+.mgr { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.mgr-head { display: flex; align-items: center; justify-content: space-between; }
+.mgr-title { display: flex; align-items: baseline; gap: 10px; }
+.mgr-title > span:first-child { font-size: 15px; font-weight: 600; }
+.mgr-count, .mgr-label { font-size: 12px; color: var(--muted); }
+.mgr-rails { display: flex; align-items: center; gap: 4px; }
+.mgr-label { margin-right: 4px; }
+.mgr-seg { height: 26px; padding: 0 10px; border-radius: 13px; font-size: 11px; font-weight: 500; background: var(--surface-2); color: #d6d6d6; }
+.mgr-seg[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
+.mgr-grid {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(92px, 1fr); gap: 8px;
+}
+.mgr-card {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 12px 14px; text-align: left;
+  border-radius: 18px; border: 1px solid #2e2e2e; background: var(--surface); color: #ededed;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.mgr-card.on { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.mgr-top { display: flex; align-items: center; justify-content: space-between; }
+.mgr-icon { width: 18px; height: 18px; }
+.mgr-state { font-size: 11px; font-weight: 500; color: #9a9a9a; }
+.mgr-card.on .mgr-state { color: #4d4d4d; }
+.mgr-name { font-size: 14px; font-weight: 600; }
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .island, .ear, .face, .dot span { transition: none; }
+  .content.enter, .content.enter-late { animation: fade .15s both; }
+}

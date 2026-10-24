@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>LSUIElement</key>
+  <true/>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>usagi reads what Spotify or Music is playing so it can show it and control playback.</string>
+  <key>NSAudioCaptureUsageDescription</key>
+  <string>usagi listens to the bass of what's playing so it can bob along. Audio is never recorded or stored.</string>
+</dict>
+</plist>
