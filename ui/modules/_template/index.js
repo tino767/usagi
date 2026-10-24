@@ -53,7 +53,7 @@ export default {
     }, label, button);
 
     return {
-      el,              // required: the panel content (460×140 by default)
+      el,              // required: the panel content (468×140 by default)
       // rail,         // optional: element for the left side rail (see media)
       show() {},       // optional: became visible
       hide() {},       // optional: hidden (island closed or scrolled away)

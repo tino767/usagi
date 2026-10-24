@@ -15,8 +15,7 @@ const PAGE_SIZE = { h: 448 };
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const RAILS = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient']];
-const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];
-const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
+const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
 const DELAYS = [3, 5, 10];
 // Gradient colors are capped at this relative luminance so white text on the
 // bottom of the island stays above ~7:1.
@@ -103,7 +102,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         const tiles = [
           ['modules', 'Modules', icons.grid, `${rotation.size()} of ${total} on`],
           ['appearance', 'Appearance', icons.appearance, `${bg} · ${Math.round(prefs.get('scale') * 100)}%`],
-          ['behavior', 'Behavior', icons.behavior, prefs.get('face') === 'idle' ? `Face hides after ${prefs.get('faceDelay')}s` : 'Face always up'],
+          ['behavior', 'Behavior', icons.behavior, prefs.get('face') === 'idle' ? `Hides after ${prefs.get('faceDelay')}s` : 'Face always up'],
           ['about', 'About', icons.info, version ? `v${version}` : 'usagi'],
         ];
         return h('div', { class: 'set-home' }, ...tiles.map(([id, label, icon, sub]) =>
@@ -168,7 +167,6 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
 
       function appearancePage() {
         const bg = prefs.get('background');
-        const grad = prefs.get('gradient');
 
         const bgTiles = h('div', { class: 'set-bgs', role: 'radiogroup', 'aria-label': 'Background' },
           ...BACKGROUNDS.map(([value, label]) => h('button', {
@@ -176,29 +174,35 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
             onclick: () => { prefs.set('background', value); ctx.face.nod(); render(); },
           }, h('span', { class: `set-bg-preview ${value}` }), label)));
 
-        let extra = null;
-        if (bg === 'dots') {
-          extra = group(row('Dots pulse with the beat', toggle('Dots pulse with the beat', prefs.get('dotsPulse'), (v) => { prefs.set('dotsPulse', v); render(); })));
-        } else if (bg === 'gradient') {
-          const preset = SWATCHES.some(([, hex]) => hex === grad);
+        // preset swatches plus a custom color; fix() adjusts picked colors
+        const colorRow = (label, key, swatches, fix = (c) => c) => {
+          const value = prefs.get(key);
+          const preset = swatches.some(([, hex]) => hex === value);
           const picker = h('input', {
-            type: 'color', class: 'set-color-input', value: grad, tabindex: '-1', 'aria-hidden': 'true',
-            oninput: () => prefs.set('gradient', capLuma(picker.value)),
+            type: 'color', class: 'set-color-input', value, tabindex: '-1', 'aria-hidden': 'true',
+            oninput: () => prefs.set(key, fix(picker.value)),
             onchange: () => render(),
           });
-          extra = group(row('Gradient color', h('div', { class: 'set-swatches', role: 'radiogroup', 'aria-label': 'Gradient color' },
-            ...SWATCHES.map(([name, hex]) => h('button', {
-              class: 'set-swatch', role: 'radio', 'aria-label': name, 'aria-checked': String(grad === hex),
+          return row(label, h('div', { class: 'set-swatches', role: 'radiogroup', 'aria-label': label },
+            ...swatches.map(([name, hex]) => h('button', {
+              class: 'set-swatch', role: 'radio', 'aria-label': name, 'aria-checked': String(value === hex),
               style: { background: hex },
-              onclick: () => { prefs.set('gradient', hex); ctx.face.nod(); render(); },
+              onclick: () => { prefs.set(key, hex); ctx.face.nod(); render(); },
             })),
             h('button', {
               class: 'set-swatch custom', role: 'radio', 'aria-label': 'Custom color', 'aria-checked': String(!preset),
-              style: preset ? null : { background: grad },
+              style: preset ? null : { background: value },
               html: preset ? icons.plus : '',
               onclick: () => picker.click(),
             }),
-            picker)));
+            picker));
+        };
+
+        let options = null;
+        if (bg === 'dots') {
+          options = group(row('Dots pulse with the beat', toggle('Dots pulse with the beat', prefs.get('dotsPulse'), (v) => { prefs.set('dotsPulse', v); render(); })));
+        } else if (bg === 'gradient') {
+          options = group(colorRow('Gradient color', 'gradient', SWATCHES, capLuma));
         }
 
         return h('div', { class: 'set-page' }, header(titleEl('Appearance')),
@@ -207,7 +211,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
               row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v))),
               row('Side rails', seg('Side rails', RAILS, prefs.get('rail'), (v) => prefs.set('rail', v)))),
             h('div', { class: 'set-block' }, eyebrow('Background'), bgTiles),
-            extra));
+            options));
       }
 
       // ---------- behavior ----------

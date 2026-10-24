@@ -16,7 +16,8 @@ export default {
 
     // ---- main panel ----
     const art = h('div', { class: 'm-art', html: icons.note, 'aria-hidden': 'true' });
-    const title = h('div', { class: 'm-title' }, 'Nothing playing');
+    const titleText = h('span', { class: 'm-title-text' }, 'Nothing playing');
+    const title = h('div', { class: 'm-title' }, titleText);
     const artist = h('div', { class: 'm-artist' }, '');
     const playBtn = h('button', { class: 'btn-round', 'aria-label': 'Play', onclick: () => command('toggle') });
     const prevBtn = h('button', { class: 'btn-ghost', 'aria-label': 'Previous track', html: icons.prev, onclick: () => command('prev') });
@@ -51,10 +52,24 @@ export default {
       setVolume(+input.value + (e.deltaY < 0 ? 4 : -4));
     }, { passive: true });
 
+    // ---- title: scrolls back and forth when it doesn't fit ----
+    function fitTitle() {
+      title.classList.remove('scrolls');
+      const overflow = titleText.scrollWidth - title.clientWidth;
+      if (title.clientWidth === 0 || overflow <= 0) return; // hidden, or fits
+      title.style.setProperty('--scroll', `${-overflow}px`);
+      title.style.setProperty('--scroll-time', `${Math.max(5, overflow / 24).toFixed(1)}s`); // ~30px/s while moving
+      title.classList.add('scrolls');
+    }
+    const titleFit = new ResizeObserver(fitTitle);
+    titleFit.observe(title);
+
     // ---- state ----
     function render(m) {
       const available = !!m?.available;
-      title.textContent = available ? (m.title || 'Unknown title') : 'Nothing playing';
+      titleText.textContent = available ? (m.title || 'Unknown title') : 'Nothing playing';
+      title.title = titleText.textContent;
+      fitTitle();
       artist.textContent = available ? (m.artist || '') : '';
       playBtn.innerHTML = m?.playing ? icons.pause : icons.play;
       playBtn.setAttribute('aria-label', m?.playing ? 'Pause' : 'Play');
@@ -88,7 +103,7 @@ export default {
       el,
       rail,
       show() { system.volume?.get().then((v) => setVolumeUI(Math.round((v ?? 0.5) * 100))).catch(() => {}); },
-      destroy() { off?.(); clearTimeout(sendTimer); },
+      destroy() { off?.(); clearTimeout(sendTimer); titleFit.disconnect(); },
     };
   },
 };

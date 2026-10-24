@@ -15,9 +15,9 @@
   --rail-dim: #9c9c9c;
   --rail-track: #b9b9b9;
   /* bottom corners of anything sitting on the content area's bottom edge:
-     open island r80 minus the ~26px inset (30 sides, 22 bottom), so they run
-     concentric with the island's curve */
-  --r-fit: 54px;
+     open island r80 minus the 22px inset. Concentric only while the side and
+     bottom insets match, so keep .content's left/right/bottom equal */
+  --r-fit: 58px;
   --spring: cubic-bezier(.34, 1.3, .5, 1);
   --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
@@ -71,10 +71,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .island.tucked { --tuck: 40px; }
 
 /* open-island backgrounds (Settings › Appearance) */
+/* an ink veil over the dots fades them in from the top */
 [data-mode="open"] .island[data-bg="dots"] {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, var(--dot-a, .16)) 1.3px, transparent 1.7px);
-  background-size: 16px 16px;
-  background-position: 8px 8px;
+  background-image:
+    linear-gradient(180deg, var(--ink) 0%, transparent 100%),
+    radial-gradient(circle, rgba(255, 255, 255, var(--dot-a, .4)) 1.3px, transparent 1.7px);
+  background-size: 100% 100%, 32px 32px;
+  background-position: 0 0, 16px 16px;
 }
 [data-mode="open"] .island[data-bg="gradient"] {
   background-image: linear-gradient(180deg, var(--ink) 0%, var(--ink) 30%, var(--grad, #3a1f6b) 100%);
@@ -136,7 +139,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transition: opacity 50ms linear, transform 50ms linear;
 }
 
-.content { position: absolute; left: 30px; right: 30px; top: calc(62px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
+.content { position: absolute; left: 22px; right: 22px; top: calc(62px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
 [data-mode="open"] .content { display: block; }
 .content.enter { animation: enter .3s var(--spring) both; }
 .content.enter-late { animation: enter .32s var(--spring) .18s both; }
@@ -188,20 +191,30 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set, .set-page { height: 100%; display: flex; flex-direction: column; gap: 10px; }
 
 .set-home { height: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+/* centered stack, like the module grid, so content stays clear of the
+   curved corners and every tile lines up the same */
 .set-tile {
-  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
-  padding: 14px; text-align: left; border-radius: 18px;
+  min-width: 0; padding: 0 10px 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  text-align: center; border-radius: 18px;
   background: var(--surface); box-shadow: inset 0 0 0 var(--hair) #262626;
-  transition: background .2s;
+  transition: background .2s, transform .15s ease-out;
 }
 .set-tile:hover { background: #1a1a1a; }
+.set-tile:active { transform: scale(.97); }
 /* corner tiles follow the island's bottom curve */
-.set-tile:first-child { border-bottom-left-radius: var(--r-fit); padding-left: 22px; }
+.set-tile:first-child { border-bottom-left-radius: var(--r-fit); }
 .set-tile:last-child { border-bottom-right-radius: var(--r-fit); }
-.set-tile-icon { width: 22px; height: 22px; }
-.set-tile-text { display: flex; flex-direction: column; gap: 1px; }
-.set-tile-label { font-size: 14px; font-weight: 600; }
-.set-tile-sub { font-size: 11px; color: #9a9a9a; }
+.set-tile-icon {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: #222; transition: background .2s;
+}
+.set-tile:hover .set-tile-icon { background: #2a2a2a; }
+.set-tile-icon svg { width: 20px; height: 20px; }
+.set-tile-text { max-width: 100%; display: flex; flex-direction: column; gap: 2px; }
+.set-tile-label { font-size: 13px; font-weight: 600; }
+.set-tile-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .set-head { flex-shrink: 0; height: 36px; display: flex; align-items: center; gap: 10px; }
 .set-icon-btn {
@@ -269,7 +282,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 .set-bg[aria-checked="true"] { color: var(--paper); box-shadow: inset 0 0 0 2px var(--paper); }
 .set-bg-preview { align-self: stretch; height: 34px; border-radius: 10px; background: var(--ink); }
-.set-bg-preview.dots { background-image: radial-gradient(circle, #4a4a4a 1.2px, transparent 1.6px); background-size: 12px 12px; background-position: 6px 6px; }
+.set-bg-preview.dots {
+  background-image: linear-gradient(180deg, var(--ink) 0%, transparent 100%), radial-gradient(circle, #6e6e6e 1.2px, transparent 1.6px);
+  background-size: 100% 100%, 24px 24px; background-position: 0 0, 12px 12px;
+}
 .set-bg-preview.gradient { background-image: linear-gradient(180deg, var(--ink) 10%, var(--grad, #3a1f6b) 100%); }
 
 .set-swatches { display: flex; align-items: center; gap: 6px; padding-right: 4px; }

@@ -1,6 +1,7 @@
-/* the cover sits 48px from the island's left and bottom edges, so its corner
-   (r32) runs concentric with the island's (r80) */
-.m-root { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 15px 0 18px; }
+/* the cover sits 48px from the island's left and bottom edges (22 content
+   inset + 26 padding on the left, centered in the 140 tall content below), so
+   its corner (r32 = 80 − 48) runs concentric with the island's */
+.m-root { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 15px 0 26px; }
 .m-art {
   width: 88px; height: 88px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -11,6 +12,23 @@
 .m-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .m-title, .m-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .m-title { font-size: 16px; font-weight: 600; }
+/* long titles slide to their end and back, pausing at each end; the fades sit
+   in the 18px gaps either side so the text starts where it would at rest */
+.m-title-text { display: inline-block; }
+.m-title.scrolls {
+  margin: 0 -10px; padding: 0 10px; text-overflow: clip;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+}
+.m-title.scrolls .m-title-text { animation: m-marquee var(--scroll-time) ease-in-out infinite alternate; }
+@keyframes m-marquee {
+  /* alternate doubles each hold: ~20% of a pass resting at either end */
+  0%, 10% { transform: translateX(0); }
+  90%, 100% { transform: translateX(var(--scroll)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-title.scrolls .m-title-text { animation: none; }
+}
 .m-artist { font-size: 13px; color: var(--muted); }
 .m-controls { display: flex; align-items: center; gap: 5px; }
 .m-controls .btn-round { width: 48px; height: 48px; }

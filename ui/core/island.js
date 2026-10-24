@@ -208,7 +208,7 @@ export function createIsland({ root, face, bridge }) {
     frame(kick, now = performance.now()) {
       pill.style.setProperty('--pulse', (1 + kick * 0.36).toFixed(3));
       if (background === 'dots' && dotsPulse && mode === 'open') {
-        island.style.setProperty('--dot-a', (0.16 + kick * 0.24).toFixed(3));
+        island.style.setProperty('--dot-a', (0.4 + kick * 0.35).toFixed(3));
       }
       updateTuck(now);
       settle();

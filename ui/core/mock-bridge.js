@@ -3,7 +3,10 @@
 
 export function createMockBridge() {
   const mediaListeners = new Set();
-  let media = { available: true, title: 'snowfall', artist: 'The Seventh Column', album: '', app: 'preview', playing: true, thumbnail: null };
+  // next/prev cycle these; the long one exercises the scrolling title
+  const tracks = [['snowfall', 'The Seventh Column'], ['Everything Happens Twice When You Are Not Looking', 'Low Tide Choir']];
+  let track = 0;
+  let media = { available: true, title: tracks[0][0], artist: tracks[0][1], album: '', app: 'preview', playing: true, thumbnail: null };
   let volume = 0.62;
   let autostart = false;
   const emit = () => mediaListeners.forEach((fn) => fn({ ...media }));
@@ -29,6 +32,10 @@ export function createMockBridge() {
       get: async () => ({ ...media }),
       command: async (cmd) => {
         if (cmd === 'toggle') media = { ...media, playing: !media.playing };
+        if (cmd === 'next' || cmd === 'prev') {
+          track = (track + (cmd === 'next' ? 1 : tracks.length - 1)) % tracks.length;
+          media = { ...media, title: tracks[track][0], artist: tracks[track][1] };
+        }
         emit();
         return true;
       },
