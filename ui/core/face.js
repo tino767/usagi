@@ -5,9 +5,10 @@
 //   bounce(ms)  hop up and down for ms        (attention / ding)
 //   nod(ms)     dip down briefly              (acknowledge input)
 //   tilt(deg)   hold a tilt until changed     (ticking, curiosity)
+//   sing(ms)    open the mouth, closing over ms (alarm chime)
 //
-// The audio is set by the core from system audio: kick bobs the head, vocal
-// opens the mouth. Nothing else opens the mouth.
+// The audio is set by the core from system audio: kick bobs the head. Vocal is
+// kept for modules to read but doesn't move the mouth; only sing() does.
 //
 //   setAudio(kick, vocal)  0..1 each
 
@@ -34,7 +35,7 @@ const OPEN = `
 export function createFace() {
   const wraps = [];
   const tongues = [];
-  const s = { bounceUntil: 0, nodUntil: 0, tilt: 0, kick: 0, vocal: 0 };
+  const s = { bounceUntil: 0, nodUntil: 0, tilt: 0, singAt: 0, singMs: 0, kick: 0, vocal: 0 };
   let lastTransform = '';
   let lastMouth = '';
 
@@ -48,6 +49,7 @@ export function createFace() {
     bounce(ms = 1500) { s.bounceUntil = Math.max(s.bounceUntil, performance.now() + ms); },
     nod(ms = 160) { s.nodUntil = performance.now() + ms; },
     tilt(deg = 0) { s.tilt = deg; },
+    sing(ms = 600) { s.singAt = performance.now(); s.singMs = ms; },
     setAudio(kick, vocal) { s.kick = kick; s.vocal = vocal; },
     get kick() { return s.kick; },
     get vocal() { return s.vocal; },
@@ -62,8 +64,9 @@ export function createFace() {
         lastTransform = t;
         for (const el of wraps) el.style.transform = t;
       }
-      // Mouth: hidden when quiet, grows down from under the ㅅ as the voice swells.
-      const v = s.vocal < 0.06 ? 0 : s.vocal;
+      // Mouth: hidden when quiet, pops open from under the ㅅ on sing() and eases shut.
+      const p = (now - s.singAt) / s.singMs;
+      const v = p >= 0 && p < 1 ? (1 - p) ** 2 : 0;
       const opacity = Math.min(1, v * 3).toFixed(2);
       const open = `scaleY(${(0.35 + 0.65 * v).toFixed(2)})`;
       if (opacity + open !== lastMouth) {

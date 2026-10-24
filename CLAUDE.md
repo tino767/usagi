@@ -39,8 +39,8 @@ canvas to match. Visuals are owned by the canvas; behavior is owned by the code.
 - Palette: island #000, paper #fff, surface #141414 / #1c1c1c, muted text #a6a6a6, tongue #E0606A. Font: Poppins 400/500/600 (bundled in `ui/fonts`).
 - Content area inside the open island: 452×140 (left/right 30, top 62, bottom 22).
 - Rails: 20px icon, 8px-wide capsule slider/dots (active dot 24px tall), 17px from the island's sides, top 74.
-- Face reactions are requested by modules (`ctx.face.bounce/nod/tilt`) and blended by the core. Modules never draw the face.
-- Audio drives the face: the kick bobs the head, vocals open the mouth (tongue). Nothing else opens the mouth.
+- Face reactions are requested by modules (`ctx.face.bounce/nod/tilt/sing`) and blended by the core. Modules never draw the face.
+- Audio drives the face: the kick bobs the head. The mouth (tongue) opens only on `ctx.face.sing`, used by the timer's alarm; system-audio vocals don't move it.
 
 ## Rules for changes
 

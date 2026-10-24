@@ -14,9 +14,10 @@ const SIZES = {
   open: { w: 512, h: 224, r: 80, ear: 26 },
 };
 // How close the cursor must be (centered on the island) to wake usagi up.
+// Welcome's zone is a little larger so it doesn't flicker at the edge.
 const ZONES = {
-  inactive: { w: 460, h: 190 },
-  welcome: { w: 460, h: 190 },
+  inactive: { w: 280, h: 110 },
+  welcome: { w: 340, h: 140 },
   open: { w: 700, h: 300 },
 };
 const HIT_PAD = 6;

@@ -100,7 +100,14 @@ export default {
       left = 0;
       face.tilt(0);
       // Ring until the play/pause button (or reset / a preset) stops it.
-      const ring = () => { face.bounce(RING_MS); island.attention(RING_MS + 200); chime(); };
+      // The mouth opens on each of the chime's two notes.
+      const ring = () => {
+        face.bounce(RING_MS);
+        island.attention(RING_MS + 200);
+        chime();
+        face.sing();
+        setTimeout(() => alarm && face.sing(), 180);
+      };
       ring();
       alarm = setInterval(ring, RING_MS);
       render();

@@ -94,7 +94,7 @@ export default {
 |---|---|
 | `h(tag, props, ...children)` | DOM helper |
 | `icons` | shared glyphs |
-| `face.flash(ms)` / `bounce(ms)` / `nod(ms)` / `tilt(deg)` | reactions |
+| `face.flash(ms)` / `bounce(ms)` / `nod(ms)` / `tilt(deg)` / `sing(ms)` | reactions |
 | `island.attention(ms)` | peek out even when the cursor is away |
 | `island.status(text)` | short text shown in place of the collapsed pill (`null` clears) |
 | `island.isFront()` / `open()` / `close()` | visibility and control |

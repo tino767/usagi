@@ -57,6 +57,7 @@ function makeCtx(id) {
       bounce: (ms) => face.bounce(ms),
       nod: (ms) => face.nod(ms),
       tilt: (deg) => face.tilt(deg),
+      sing: (ms) => face.sing(ms),
     },
     island: {
       get mode() { return island.mode; },

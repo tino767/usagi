@@ -1,6 +1,6 @@
 // Audio for the face. The backend sends `[kick, vocal]` (0..1 each) from
-// system audio (see src-tauri/src/audio.rs): kick drives the bob, vocal the
-// mouth. When that isn't available — preview mode, or capture not permitted —
+// system audio (see src-tauri/src/audio.rs): kick drives the bob, vocal is
+// exposed to modules as `ctx.audio.vocal`. When that isn't available — preview mode, or capture not permitted —
 // a gentle fake beat and fake singing run while media is playing.
 
 const STALE_MS = 600;
