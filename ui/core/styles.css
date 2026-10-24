@@ -254,6 +254,18 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-group { flex-shrink: 0; border-radius: 18px; background: var(--surface); }
 .set-row { min-height: 44px; padding: 6px 8px 6px 16px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .set-row + .set-row { box-shadow: inset 0 var(--hair) 0 #242424; }
+/* the page's reset: a row-height tile that fills the island's bottom curve, so
+   every real row sits above it unclipped; .set-scroll's radius rounds its bottom.
+   Its label is centered, clear of the curve. The top margin stands in for the
+   eyebrow it doesn't have (17px + its 6px gap), so it spaces like a section. */
+.set-bumper {
+  flex-shrink: 0; height: 44px; margin-top: 23px; border-radius: 18px 18px 0 0;
+  background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 500;
+  transition: background .2s, color .2s;
+}
+.set-bumper:hover { background: #1a1a1a; color: var(--paper); }
+.set-bumper.armed { color: var(--tongue); }
+.set-bumper:disabled { color: #5c5c5c; background: var(--surface); cursor: default; }
 .set-row.is-off .set-label, .set-row.is-off .set-seg { opacity: .45; }
 .set-label { display: flex; flex-direction: column; font-size: 13px; font-weight: 500; }
 .set-label small { font-size: 11px; font-weight: 400; color: #9a9a9a; }
@@ -276,7 +288,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .set-bgs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .set-bg {
   height: 72px; padding: 8px; border-radius: 16px;
-  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center;
   background: var(--surface); color: #d6d6d6;
   transition: background .2s, color .2s;
   font-size: 12px; font-weight: 500;

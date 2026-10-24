@@ -1,17 +1,24 @@
 // The built-in Settings page. Always last in the rotation; can't be removed.
 //
 // Home is a row of category tiles at the normal island size. Picking one grows
-// the island down into that page (512×448); Back, scrolling away or closing
-// shrinks it again. The face stays up here even when auto-hide is on.
+// the island down just enough to fit that page (up to 512×460); Back, scrolling
+// away or closing shrinks it again. The face stays up here even when auto-hide is on.
 //
 // To add a setting: give it a default in prefs.js, react to it in app.js,
-// and add a row to one of the pages below.
+// add a row to one of the pages below, and add its key to that page's reset.
 
 import { h } from './dom.js';
 import { icons } from './icons.js';
 import { SYSTEM_ID } from './rotation.js';
+import { DEFAULTS } from './prefs.js';
 
-const PAGE_SIZE = { h: 448 };
+// A page grows the island to fit its content, between the normal open height
+// and PAGE_MAX_H; anything taller scrolls. CONTENT_PAD is .content's top + bottom
+// inset; CONTENT_W its width once open, so a mid-animation island measures the same.
+const PAGE_MIN_H = 224;
+const PAGE_MAX_H = 460;
+const CONTENT_PAD = 62 + 22;
+const CONTENT_W = 512 - 22 - 22;
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const RAILS = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient']];
@@ -36,6 +43,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       let searching = false;
       let version = '';
       let autostart = null; // unknown until asked
+      let pageH = null; // island height for the current page; null on home
       const root = h('div', { class: 'set' });
 
       bridge.version?.().then((v) => { version = v || ''; if (!page || page === 'about') render(); }).catch(() => {});
@@ -45,7 +53,6 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         query = '';
         searching = false;
         render();
-        ctx.island.resize();
         island.animateContent('swap');
         if (next === 'behavior' && autostart === null) {
           bridge.autostart?.get().then((on) => { autostart = !!on; if (page === 'behavior') render(); }).catch(() => {});
@@ -55,6 +62,26 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       function render() {
         const view = { modules: modulesPage, appearance: appearancePage, behavior: behaviorPage, about: aboutPage }[page];
         root.replaceChildren(view ? view() : home());
+        fit();
+        // measuring can start a font weight loading; fit again once it lands
+        if (document.fonts?.status === 'loading') document.fonts.ready.then(fit);
+      }
+
+      // Lay the page out at its natural height for a moment to measure it. The
+      // island is scaled with a transform, so offsetHeight is in design px.
+      // Search filtering doesn't re-render, so typing never resizes the island.
+      function fit() {
+        if (page && !root.isConnected) return;
+        let next = null;
+        if (page) {
+          const view = root.firstElementChild;
+          view.style.cssText = `height: auto; flex: none; width: ${CONTENT_W}px`;
+          next = Math.min(PAGE_MAX_H, Math.max(PAGE_MIN_H, view.offsetHeight + CONTENT_PAD));
+          view.style.cssText = '';
+        }
+        if (next === pageH) return;
+        pageH = next;
+        ctx.island.resize();
       }
 
       // ---------- building blocks ----------
@@ -92,6 +119,31 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
 
       const group = (...rows) => h('div', { class: 'set-group' }, ...rows.filter(Boolean));
       const eyebrow = (text) => h('span', { class: 'set-eyebrow' }, text);
+      // A page's body. It ends in the bumper, which fills the island's bottom
+      // curve below the last row and resets the page's prefs to their defaults.
+      const scroll = (reset, ...children) => h('div', { class: 'set-scroll' }, ...children, bumper(...reset));
+
+      // Resetting can't be undone, so the first click arms it and a second within 3s confirms.
+      function bumper(label, keys) {
+        const atDefaults = keys.every((key) => prefs.get(key) === DEFAULTS[key]);
+        let timer = 0;
+        const btn = h('button', {
+          class: 'set-bumper', disabled: atDefaults,
+          onclick: () => {
+            if (!btn.classList.contains('armed')) {
+              btn.classList.add('armed');
+              btn.textContent = 'Click again to reset';
+              timer = setTimeout(() => { btn.classList.remove('armed'); btn.textContent = label; }, 3000);
+              return;
+            }
+            clearTimeout(timer);
+            keys.forEach((key) => prefs.set(key, DEFAULTS[key]));
+            ctx.face.nod();
+            render();
+          },
+        }, label);
+        return btn;
+      }
 
       // ---------- home ----------
 
@@ -206,7 +258,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         }
 
         return h('div', { class: 'set-page' }, header(titleEl('Appearance')),
-          h('div', { class: 'set-scroll' },
+          scroll(['Reset appearance', ['scale', 'rail', 'background', 'gradient', 'dotsPulse']],
             group(
               row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v))),
               row('Side rails', seg('Side rails', RAILS, prefs.get('rail'), (v) => prefs.set('rail', v)))),
@@ -219,7 +271,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       function behaviorPage() {
         const idle = prefs.get('face') === 'idle';
         return h('div', { class: 'set-page' }, header(titleEl('Behavior')),
-          h('div', { class: 'set-scroll' },
+          scroll(['Reset behavior', ['face', 'faceDelay', 'hideFullscreen']],
             h('div', { class: 'set-block' }, eyebrow('Face'), group(
               row('When open', seg('Face when open', FACE, prefs.get('face'), (v) => prefs.set('face', v))),
               row('Hide after', seg('Hide after', DELAYS.map((d) => [d, `${d}s`]), prefs.get('faceDelay'), (v) => prefs.set('faceDelay', v), { disabled: !idle }),
@@ -242,7 +294,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       function aboutPage() {
         const shortcut = IS_MAC ? '⌘ ⌥ U' : 'Ctrl Alt U';
         return h('div', { class: 'set-page' }, header(titleEl('About')),
-          h('div', { class: 'set-scroll' },
+          scroll(['Reset all settings', Object.keys(DEFAULTS)],
             group(
               row('Version', h('span', { class: 'set-value' }, version || '—')),
               row('Open or close', h('span', { class: 'set-value' }, shortcut)),
@@ -252,9 +304,9 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       render();
       return {
         el: root,
-        size: () => (page ? PAGE_SIZE : null),
+        size: () => (page && pageH ? { h: pageH } : null),
         show() { page = null; render(); },
-        hide() { page = null; query = ''; searching = false; },
+        hide() { page = null; pageH = null; query = ''; searching = false; },
       };
     },
   };
