@@ -1,5 +1,9 @@
 # usagi
 
+<p align="center">
+  <img src="docs/usagi.png" width="640" alt="usagi open on the media module: album art, track title, playback controls, a volume rail on the left and module dots on the right">
+</p>
+
 A desktop companion that lives in the top edge of your screen. He sleeps as a
 small pill, peeks out when your cursor comes near, and opens into a panel of
 utilities when you click his face. Scroll to move between modules; click his
