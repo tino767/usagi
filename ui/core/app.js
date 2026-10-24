@@ -7,7 +7,8 @@ import { createFace } from './face.js';
 import { createIsland } from './island.js';
 import { createContrast } from './contrast.js';
 import { createRotation, SYSTEM_ID } from './rotation.js';
-import { createManager } from './manager.js';
+import { createSettings } from './settings.js';
+import { createPrefs } from './prefs.js';
 import { createStore } from './store.js';
 import { createAudio } from './audio.js';
 import { createBridge } from './bridge.js';
@@ -16,10 +17,17 @@ const bridge = createBridge();
 const store = createStore('usagi');
 const face = createFace();
 const island = createIsland({ root: document.getElementById('stage'), face, bridge });
-createContrast({ island, bridge });
-// UI scale, picked on the Modules page.
-const setScale = (value) => island.setScale(value);
-setScale(store.get('scale', 1));
+const contrast = createContrast({ island, bridge });
+const prefs = createPrefs(store);
+
+// ---- preferences → the core (changed on the Settings page) ----
+prefs.watch('scale', (v) => island.setScale(v));
+prefs.watch('rail', (v) => contrast.setMode(v));
+const applyBackground = () => island.setBackground(prefs.get('background'), prefs.get('gradient'), prefs.get('dotsPulse'));
+['background', 'gradient', 'dotsPulse'].forEach((key) => prefs.watch(key, applyBackground));
+const applyFace = () => island.setFaceHide(prefs.get('face'), prefs.get('faceDelay') * 1000);
+['face', 'faceDelay'].forEach((key) => prefs.watch(key, applyFace));
+prefs.watch('hideFullscreen', (v) => bridge.setHideFullscreen?.(v));
 
 // ---- load modules from src/renderer/modules/<id>/index.js ----
 const found = [];
@@ -65,6 +73,7 @@ function makeCtx(id) {
       attention: (ms) => island.attention(ms),
       status: (text) => island.setStatus(id, text),
       open: () => { rotation.goTo(id); island.setMode('open'); },
+      resize: () => { if (rotation.current() === id) rotation.refreshSize(); },
       close: () => island.setMode('inactive'),
     },
     system: { media: bridge.media, volume: bridge.volume },
@@ -74,7 +83,7 @@ function makeCtx(id) {
 }
 
 let rotation;
-catalog.set(SYSTEM_ID, createManager({ catalog, getRotation: () => rotation, store, setScale }));
+catalog.set(SYSTEM_ID, createSettings({ catalog, getRotation: () => rotation, prefs, bridge, island }));
 rotation = createRotation({ island, store, catalog, makeCtx });
 rotation.start();
 
@@ -87,7 +96,7 @@ function frame(now) {
   const { kick, vocal } = audio.read(now, mediaPlaying);
   face.setAudio(kick, vocal);
   face.frame(now);
-  island.frame(kick);
+  island.frame(kick, now);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

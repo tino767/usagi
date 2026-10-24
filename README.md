@@ -30,7 +30,7 @@ npm run preview   # UI only, in a browser at http://localhost:5179, with fake me
 ```
 
 `Ctrl+Alt+U` (`Cmd+Option+U` on macOS) toggles usagi open. The tray icon has
-Launch at login, Hide when a fullscreen app is in front, Reload and Quit.
+Open, Reload and Quit; everything else is in Settings (the last page).
 
 ## How it's put together
 
@@ -40,7 +40,8 @@ ui/                        everything you see â€” no build step
     island.js              inactive / welcome / open + hit-testing
     face.js                the face and reaction blending
     rotation.js            module list, scroll-to-switch, position rail
-    manager.js             the built-in Modules page (always last)
+    settings.js            the built-in Settings page (always last)
+    prefs.js               user preferences and their defaults
     bridge.js              talks to the Rust backend (mock-bridge.js in preview)
     audio.js               kick + vocal levels from the backend, fake fallback
     contrast.js            black or white side rails, depending on what's behind them
@@ -73,7 +74,7 @@ lines up with the notch, and it follows you across Spaces and fullscreen apps.
 
 1. Copy `ui/modules/_template` to `ui/modules/<id>`.
 2. Set `id` in `index.js` to the folder name, give it a `name` and `icon`.
-3. Restart `npm run dev`, open the **Modules** page and click it to add it.
+3. Restart `npm run dev`, open **Settings › Modules** and click it to add it.
 
 ```js
 export default {

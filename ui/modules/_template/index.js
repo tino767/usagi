@@ -1,17 +1,18 @@
 // Copy this folder to src/renderer/modules/<your-id>/ (no leading underscore),
 // change `id` to match the folder name, restart usagi, then add it from the
-// Modules page. Folders starting with "_" are ignored by the loader.
+// Settings › Modules page. Folders starting with "_" are ignored by the loader.
 
 import { icons } from '../../core/icons.js';
 
 export default {
   id: '_template',               // must equal the folder name
-  name: 'Counter',               // shown on the Modules page and in aria labels
-  description: 'An example module', // tooltip on the Modules page
+  name: 'Counter',               // shown in Settings › Modules and in aria labels
+  description: 'An example module', // tooltip and search text in Settings › Modules
   icon: icons.spark,             // 24×24 SVG string in currentColor, shown in the position rail
   order: 10,                     // default position on first run
   styles: false,                 // true → loads ./style.css next to this file
   // size: { w: 520, h: 224 },   // optional open-island size for this module
+  // keepFace: true,               // never auto-hide the face while this module is showing
 
   // Called once when the module joins the rotation (also at startup), and it
   // keeps living while other modules are showing — timers, listeners and
@@ -28,6 +29,7 @@ export default {
     // ctx.island.status(text)            short text in place of the collapsed pill (null clears)
     // ctx.island.isFront()               is this module open right now?
     // ctx.island.open() / close()
+    // ctx.island.resize()                re-read size() from the returned instance (size changes while open)
     // ctx.system.media / ctx.system.volume   OS bridge (see ui/core/bridge.js)
     // ctx.audio.kick / ctx.audio.vocal   current 0..1 kick and vocal levels
     // ctx.store.get(key, fallback) / set(key, value)   persisted, scoped to this module

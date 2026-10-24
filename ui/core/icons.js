@@ -20,4 +20,12 @@ export const icons = {
   stop: s('<rect fill="currentColor" x="4" y="4" width="16" height="16" rx="4"/>'),
   reset: s('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/>', stroke),
   spark: s('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>', stroke),
+  settings: s('<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.6" fill="currentColor"/><circle cx="15" cy="17" r="2.6" fill="currentColor"/>', stroke),
+  appearance: s('<path d="M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.5 0-1.2-1-1.5-1-2.5 0-.8.7-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4-4-7.5-9-7.5z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="11" cy="7.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/>', stroke),
+  behavior: s('<path d="M8 3v12l3-3 2.5 6 2-1-2.5-6H17z"/>', stroke),
+  info: s('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', stroke),
+  back: s('<path d="M15 5l-7 7 7 7"/>', stroke),
+  search: s('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', stroke),
+  close: s('<path d="M6 6l12 12M18 6 6 18"/>', stroke),
+  plus: s('<path d="M12 5v14M5 12h14"/>', stroke),
 };

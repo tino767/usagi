@@ -3,7 +3,7 @@
 
 import { h } from './dom.js';
 
-export const SYSTEM_ID = 'modules';
+export const SYSTEM_ID = 'settings';
 const WHEEL_GAP_MS = 380;
 
 export function createRotation({ island, store, catalog, makeCtx }) {
@@ -81,8 +81,17 @@ export function createRotation({ island, store, catalog, makeCtx }) {
         if (animate) island.animateContent('swap');
       }
     }
-    island.setOpenSize(def.size || null);
+    applySize();
+    island.pinFace(!!def.keepFace);
     renderRail(list);
+  }
+
+  // A module can change size while showing (Settings grows into its pages):
+  // instance.size() wins over the definition's static size.
+  function applySize() {
+    const def = catalog.get(currentId);
+    const inst = instances.get(currentId);
+    island.setOpenSize((inst?.size ? inst.size() : def?.size) || null);
   }
 
   function go(i) { index = i; render(); }
@@ -132,6 +141,7 @@ export function createRotation({ island, store, catalog, makeCtx }) {
     has: (id) => order.includes(id),
     size: () => order.length,
     current: () => currentId,
+    refreshSize: applySize,
     goTo(id) { const i = ids().indexOf(id); if (i >= 0) go(i); },
     next: () => step(1),
     prev: () => step(-1),

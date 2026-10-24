@@ -5,6 +5,7 @@ export function createMockBridge() {
   const mediaListeners = new Set();
   let media = { available: true, title: 'snowfall', artist: 'The Seventh Column', album: '', app: 'preview', playing: true, thumbnail: null };
   let volume = 0.62;
+  let autostart = false;
   const emit = () => mediaListeners.forEach((fn) => fn({ ...media }));
 
   return {
@@ -18,6 +19,12 @@ export function createMockBridge() {
     },
     onToggle: () => () => {},
     onAudio: () => () => {},
+    setHideFullscreen: () => {},
+    autostart: {
+      get: async () => autostart,
+      set: async (on) => { autostart = !!on; return autostart; },
+    },
+    version: async () => 'preview',
     media: {
       get: async () => ({ ...media }),
       command: async (cmd) => {

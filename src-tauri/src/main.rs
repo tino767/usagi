@@ -12,7 +12,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
@@ -118,33 +118,37 @@ async fn backdrop_luma(window: WebviewWindow, rects: Vec<CssRect>) -> Result<Vec
         .map_err(|e| e.to_string())?
 }
 
+/// Settings › Behavior: hide while a fullscreen app is in front (Windows).
+#[tauri::command]
+fn set_hide_fullscreen(on: bool) {
+    overlay::HIDE_IN_FULLSCREEN.store(on, Ordering::Relaxed);
+}
+
+/// Settings › Behavior: launch at login.
+#[tauri::command]
+fn autostart_get(app: AppHandle) -> bool {
+    app.autolaunch().is_enabled().unwrap_or(false)
+}
+
+#[tauri::command]
+fn autostart_set(app: AppHandle, on: bool) -> Result<bool, String> {
+    let auto = app.autolaunch();
+    if on { auto.enable() } else { auto.disable() }.map_err(|e| e.to_string())?;
+    Ok(auto.is_enabled().unwrap_or(on))
+}
+
 // ---------- tray ----------
 
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let label = if cfg!(target_os = "macos") { "Open usagi  (⌘⌥U)" } else { "Open usagi  (Ctrl+Alt+U)" };
     let open = MenuItem::with_id(app, "open", label, true, None::<&str>)?;
-    let hide_fs = CheckMenuItem::with_id(
-        app,
-        "hide_fullscreen",
-        "Hide when a fullscreen app is in front",
-        cfg!(windows),
-        overlay::HIDE_IN_FULLSCREEN.load(Ordering::Relaxed),
-        None::<&str>,
-    )?;
-    let login = CheckMenuItem::with_id(
-        app,
-        "login",
-        "Launch at login",
-        true,
-        app.autolaunch().is_enabled().unwrap_or(false),
-        None::<&str>,
-    )?;
+    // Behavior toggles (fullscreen hiding, launch at login) live in Settings.
     let reload = MenuItem::with_id(app, "reload", "Reload", true, None::<&str>)?;
     let devtools = MenuItem::with_id(app, "devtools", "Developer tools", cfg!(debug_assertions), None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit usagi", true, None::<&str>)?;
     let sep1 = PredefinedMenuItem::separator(app)?;
     let sep2 = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&open, &sep1, &hide_fs, &login, &reload, &devtools, &sep2, &quit])?;
+    let menu = Menu::with_items(app, &[&open, &sep1, &reload, &devtools, &sep2, &quit])?;
 
     let mut tray = TrayIconBuilder::with_id("usagi")
         .tooltip("usagi")
@@ -153,17 +157,6 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "open" => {
                 let _ = app.emit("toggle", ());
-            }
-            "hide_fullscreen" => {
-                let on = !overlay::HIDE_IN_FULLSCREEN.load(Ordering::Relaxed);
-                overlay::HIDE_IN_FULLSCREEN.store(on, Ordering::Relaxed);
-                let _ = hide_fs.set_checked(on);
-            }
-            "login" => {
-                let auto = app.autolaunch();
-                let enabled = auto.is_enabled().unwrap_or(false);
-                let _ = if enabled { auto.disable() } else { auto.enable() };
-                let _ = login.set_checked(auto.is_enabled().unwrap_or(false));
             }
             "reload" => {
                 if let Some(w) = app.get_webview_window("main") {
@@ -216,7 +209,10 @@ fn main() {
             media_command,
             volume_get,
             volume_set,
-            backdrop_luma
+            backdrop_luma,
+            set_hide_fullscreen,
+            autostart_get,
+            autostart_set
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]

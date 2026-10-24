@@ -36,6 +36,12 @@ function createTauriBridge() {
     onToggle: (fn) => on('toggle', fn),
     onAudio: (fn) => on('audio', fn),
     backdrop: (rects) => invoke('backdrop_luma', { rects }),
+    setHideFullscreen: (on) => invoke('set_hide_fullscreen', { on: !!on }),
+    autostart: {
+      get: () => invoke('autostart_get'),
+      set: (on) => invoke('autostart_set', { on: !!on }),
+    },
+    version: () => tauri.app?.getVersion?.() ?? Promise.resolve(''),
     media: {
       get: () => invoke('media_get'),
       command: (cmd) => invoke('media_command', { cmd }),

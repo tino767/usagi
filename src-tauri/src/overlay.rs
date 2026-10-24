@@ -10,7 +10,7 @@ use tauri::{Emitter, LogicalSize, PhysicalPosition, WebviewWindow};
 /// Size of the overlay in CSS pixels. Wide enough for the open island + side
 /// rails at the largest UI scale; the UI scales itself down inside it (island.js).
 pub const WIDTH: f64 = 760.0;
-pub const HEIGHT: f64 = 340.0;
+pub const HEIGHT: f64 = 580.0; // fits the 448-tall Settings pages at 125% scale
 
 const CURSOR_POLL: Duration = Duration::from_millis(50);
 const GUARD_POLL: Duration = Duration::from_millis(1000);

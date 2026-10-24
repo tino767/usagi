@@ -15,6 +15,7 @@ export function createContrast({ island, bridge }) {
   const rails = [island.railLeft, island.railRight];
   let supported = typeof bridge.backdrop === 'function';
   let timer = 0;
+  let override = null; // 'light' | 'dark' from Settings; null = sample the screen
 
   const pin = (tone) => rails.forEach((rail) => { rail.dataset.rail = tone; });
 
@@ -59,6 +60,7 @@ export function createContrast({ island, bridge }) {
 
   function start() {
     stop();
+    if (override) { pin(override); return; }
     const tick = async () => {
       await sample();
       if (timer && supported && island.mode === 'open') timer = setTimeout(tick, POLL_MS);
@@ -67,7 +69,17 @@ export function createContrast({ island, bridge }) {
   }
 
   island.onMode((next) => {
-    if (next === 'open' && supported) start();
+    if (next === 'open' && (supported || override)) start();
     else stop();
   });
+
+  return {
+    /** 'auto' samples the backdrop; 'light' / 'dark' force a tone. */
+    setMode(value) {
+      override = value === 'light' || value === 'dark' ? value : null;
+      if (override) { stop(); pin(override); }
+      else if (island.mode === 'open' && supported) start();
+      else if (!supported) pin('dark');
+    },
+  };
 }
