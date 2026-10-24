@@ -1,6 +1,6 @@
 // usagi — Tauri backend.
 // Owns the overlay window, click-through, cursor tracking, the tray, and the
-// bridge to the OS (media session, volume, system-audio bass).
+// bridge to the OS (media session, volume, system-audio levels).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 

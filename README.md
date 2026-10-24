@@ -37,8 +37,11 @@ ui/                        everything you see — no build step
     face.js                the face and reaction blending
     rotation.js            module list, scroll-to-switch, position rail
     manager.js             the built-in Modules page (always last)
-    bridge.js              talks to the Rust backend (or a mock in preview)
-    audio.js               bass from the backend, fake beat fallback
+    bridge.js              talks to the Rust backend (mock-bridge.js in preview)
+    audio.js               kick + vocal levels from the backend, fake fallback
+    contrast.js            black or white side rails, depending on what's behind them
+    store.js               per-module persistent storage
+    dom.js                 tiny DOM helpers (h, svg)
     app.js                 boot
   modules/
     media/  timer/  notes/
@@ -46,7 +49,7 @@ ui/                        everything you see — no build step
 src-tauri/                 Rust backend
   src/main.rs              commands, tray, plugins
   src/overlay.rs           window placement, click-through, cursor feed, stay-on-top, fullscreen hiding
-  src/audio.rs             system-audio bass detection
+  src/audio.rs             kick + vocal detection from system audio
   src/system/              media + volume per OS: win.rs, mac.rs, linux.rs
 scripts/
   gen-modules.js           writes ui/modules/index.json (runs before dev/build)
@@ -92,7 +95,7 @@ export default {
 | `island.status(text)` | short text shown in place of the collapsed pill (`null` clears) |
 | `island.isFront()` / `open()` / `close()` | visibility and control |
 | `system.media` / `system.volume` | OS bridge |
-| `audio.bass` | current 0..1 bass level |
+| `audio.kick` / `audio.vocal` | current 0..1 kick and vocal levels |
 | `store.get(key, fallback)` / `set(key, value)` | persisted, scoped to the module |
 
 Shared CSS: `.btn-round`, `.btn-ghost`, `.chip`, `.eyebrow`, `.vslider`. Tokens are
@@ -109,13 +112,13 @@ A module that needs something new from the OS: add a `#[tauri::command]` in
 | Now playing + controls | Any app in the media flyout | Spotify, Apple Music | Any MPRIS player |
 | Album art | ✓ | Spotify | ✓ |
 | System volume | Core Audio | `osascript` | `wpctl` / `pactl` |
-| Bass reaction | WASAPI loopback | Core Audio tap (14.2+, asks permission) | `parec` on the sink monitor |
+| Music reaction | WASAPI loopback | Core Audio tap (14.2+, asks permission) | `parec` on the sink monitor |
 | Hide over fullscreen apps | ✓ | not yet | not yet |
 
 Notes:
 - **macOS**: Apple locked the system-wide "now playing" API to its own apps in
   macOS 15.4, so usagi talks to Spotify and Music directly. The first time, macOS asks
-  to let usagi control each app, and to record system audio for the bass.
+  to let usagi control each app, and to listen to system audio for the music reaction.
 - **Linux**: Wayland doesn't let apps place themselves or stay on top, so usagi
   runs through XWayland automatically. Transparency needs a compositor (any
   modern desktop has one).
@@ -123,7 +126,10 @@ Notes:
 
 ## Status
 
-Type-checked for all three platforms. The Linux build was run end to end
-(window, cursor tracking, click-through, open/close, scrolling between modules).
-Windows and macOS haven't been run on real hardware yet. Expect small fixes the
-first time you build there.
+Runs on Windows and Linux. macOS is type-checked but hasn't been run on real
+hardware yet, so expect small fixes the first time you build there.
+
+## License
+
+Proprietary. Copyright (c) 2026 Valentino Valero. All rights reserved. See
+[LICENSE](LICENSE).

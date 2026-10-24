@@ -7,6 +7,6 @@
   <key>NSAppleEventsUsageDescription</key>
   <string>usagi reads what Spotify or Music is playing so it can show it and control playback.</string>
   <key>NSAudioCaptureUsageDescription</key>
-  <string>usagi listens to the bass of what's playing so it can bob along. Audio is never recorded or stored.</string>
+  <string>usagi listens to what's playing so its face can react to the music. Audio is never recorded or stored.</string>
 </dict>
 </plist>

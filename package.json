@@ -4,6 +4,7 @@
   "description": "A desktop companion that lives in the top edge of your screen.",
   "author": "Valentino Valero",
   "license": "UNLICENSED",
+  "repository": "github:tino767/usagi",
   "private": true,
   "scripts": {
     "dev": "tauri dev",
