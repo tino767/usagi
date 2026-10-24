@@ -50,8 +50,9 @@ export default {
       playBtn.innerHTML = alarm ? icons.stop : running() ? icons.pause : icons.play;
       playBtn.setAttribute('aria-label', alarm ? 'Stop alarm' : running() ? 'Pause timer' : 'Start timer');
       playBtn.classList.toggle('t-ringing', !!alarm);
-      island.status(running() ? time.textContent : null);
-      bar.style.transform = `scaleX(${Math.min(1, 1 - r / total)})`;
+      const done = Math.min(1, 1 - r / total);
+      island.progress(running() ? done : null);
+      bar.style.transform = `scaleX(${done})`;
       chips.forEach((c, i) => c.setAttribute('aria-pressed', String(total === PRESETS[i] * 60)));
     }
 
@@ -117,7 +118,7 @@ export default {
     render();
     return {
       el,
-      destroy() { clearInterval(loop); silence(); face.tilt(0); island.status(null); },
+      destroy() { clearInterval(loop); silence(); face.tilt(0); island.progress(null); },
     };
   },
 };

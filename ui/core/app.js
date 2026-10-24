@@ -77,6 +77,7 @@ function makeCtx(id) {
       isFront: () => island.mode === 'open' && rotation.current() === id,
       attention: (ms) => island.attention(ms),
       status: (text) => island.setStatus(id, text),
+      progress: (value) => island.setProgress(id, value),
       open: () => { rotation.goTo(id); island.setMode('open'); },
       resize: () => { if (rotation.current() === id) rotation.refreshSize(); },
       close: () => island.setMode('inactive'),

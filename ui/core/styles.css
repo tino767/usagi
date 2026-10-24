@@ -40,6 +40,9 @@ html, body {
   user-select: none;
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
+/* icons get swapped while showing (the timer redraws its play/pause 4×/s); if the
+   press lands on an icon that's replaced before release, the click is lost */
+button svg { pointer-events: none; }
 :focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
 
 /* ---------- island ---------- */
@@ -128,6 +131,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transform: scaleX(var(--pulse, 1));
 }
 [data-mode="inactive"] .pill { display: block; }
+.pill-fill { display: none; position: absolute; inset: 0; border-radius: inherit; background: var(--paper); }
+/* a progress bar holds still: no kick pulse */
+.has-progress .pill { background: rgba(255, 255, 255, .25); transform: none; }
+.has-progress .pill-fill {
+  display: block;
+  clip-path: inset(0 calc((1 - var(--progress, 0)) * 100%) 0 0 round 3.5px);
+  transition: clip-path .25s linear;
+}
 
 .status {
   display: none; position: absolute; inset: 0;

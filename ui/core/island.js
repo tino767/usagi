@@ -64,7 +64,10 @@ export function createIsland({ root, face, bridge }) {
 
   // glass background: the blurred screen behind the island (drawn by glass.js)
   const frost = h('canvas');
-  const pill = h('div', { class: 'pill' });
+  // The pill doubles as a progress bar (a running timer...): a dim track with a white fill.
+  const pillFill = h('div', { class: 'pill-fill' });
+  const pill = h('div', { class: 'pill' }, pillFill);
+  const progresses = new Map(); // owner → 0..1, same slot rules as statuses
   // Short text a module can show in place of the pill while inactive (a running timer...).
   const status = h('span', { class: 'status' });
   const statuses = new Map(); // owner → text; the oldest still-set owner keeps the slot
@@ -175,6 +178,13 @@ export function createIsland({ root, face, bridge }) {
       const shown = statuses.values().next().value ?? '';
       if (status.textContent !== shown) status.textContent = shown;
       island.classList.toggle('has-status', !!shown);
+    },
+    setProgress(owner, value) {
+      if (value == null) progresses.delete(owner);
+      else progresses.set(owner, Math.max(0, Math.min(1, Number(value) || 0)));
+      const shown = progresses.values().next().value;
+      if (shown != null) pill.style.setProperty('--progress', shown.toFixed(4));
+      island.classList.toggle('has-progress', shown != null);
     },
     // Peek out even though the cursor is away (timer done, notification...).
     attention(ms = 3000) {

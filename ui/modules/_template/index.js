@@ -27,6 +27,7 @@ export default {
     // ctx.face.sing(ms)                  open the mouth, closing over ms
     // ctx.island.attention(ms)           peek out even if the cursor is away
     // ctx.island.status(text)            short text in place of the collapsed pill (null clears)
+    // ctx.island.progress(0..1)          fill the collapsed pill left to right (null clears)
     // ctx.island.isFront()               is this module open right now?
     // ctx.island.open() / close()
     // ctx.island.resize()                re-read size() from the returned instance (size changes while open)
