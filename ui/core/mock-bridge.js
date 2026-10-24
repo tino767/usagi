@@ -17,7 +17,7 @@ export function createMockBridge() {
       return () => window.removeEventListener('mousemove', handler);
     },
     onToggle: () => () => {},
-    onBass: () => () => {},
+    onAudio: () => () => {},
     media: {
       get: async () => ({ ...media }),
       command: async (cmd) => {

@@ -40,7 +40,7 @@ export function createManager({ catalog, getRotation, store, contrast }) {
             'aria-pressed': String(on),
             title: def.description || def.name,
             onclick: () => {
-              if (on) rotation.remove(def.id); else { rotation.add(def.id); ctx.face.flash(500); }
+              if (on) rotation.remove(def.id); else { rotation.add(def.id); ctx.face.nod(); }
               render();
             },
           },

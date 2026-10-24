@@ -29,7 +29,7 @@ canvas to match. Visuals are owned by the canvas; behavior is owned by the code.
 - `ui/modules/<id>/`: one folder per module; `_template` is the starting point. Folders starting with `_` are ignored.
 - `src-tauri/src/overlay.rs`: window placement, click-through, cursor feed, stay-on-top, fullscreen hiding
 - `src-tauri/src/system/{win,mac,linux}.rs`: media + volume per OS, same function signatures
-- `src-tauri/src/audio.rs`: system-audio bass, sent to the UI as the `bass` event
+- `src-tauri/src/audio.rs`: system-audio kick + vocal levels, sent to the UI as the `audio` event (`[kick, vocal]`)
 
 ## Design rules
 
@@ -39,7 +39,8 @@ canvas to match. Visuals are owned by the canvas; behavior is owned by the code.
 - Palette: island #000, paper #fff, surface #141414 / #1c1c1c, muted text #a6a6a6, tongue #E0606A. Font: Poppins 400/500/600 (bundled in `ui/fonts`).
 - Content area inside the open island: 452×140 (left/right 30, top 62, bottom 22).
 - Rails: 20px icon, 8px-wide capsule slider/dots (active dot 24px tall), 17px from the island's sides, top 74.
-- Face reactions are requested by modules (`ctx.face.flash/bounce/nod/tilt`) and blended by the core. Modules never draw the face.
+- Face reactions are requested by modules (`ctx.face.bounce/nod/tilt`) and blended by the core. Modules never draw the face.
+- Audio drives the face: the kick bobs the head, vocals open the mouth (tongue). Nothing else opens the mouth.
 
 ## Rules for changes
 

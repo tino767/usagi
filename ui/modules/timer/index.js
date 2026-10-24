@@ -1,5 +1,5 @@
 // Timer — a countdown with presets. Keeps running while usagi is closed;
-// when it finishes he peeks out, sticks his tongue out and bounces.
+// when it finishes he peeks out and bounces.
 
 import { icons } from '../../core/icons.js';
 
@@ -61,7 +61,7 @@ export default {
     function start() {
       if (left <= 0) left = total;
       endAt = Date.now() + left * 1000;
-      face.flash(500);
+      face.nod();
       clearInterval(loop);
       loop = setInterval(tick, 250);
       tick();
@@ -90,7 +90,6 @@ export default {
       endAt = 0;
       left = 0;
       face.tilt(0);
-      face.flash(2600);
       face.bounce(2600);
       island.attention(3500);
       chime();

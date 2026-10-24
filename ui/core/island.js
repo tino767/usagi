@@ -67,7 +67,6 @@ export function createIsland({ root, face, bridge }) {
     mode = next;
     el.dataset.mode = next;
     applySize();
-    if (next === 'open') face.flash(800);
     if (prev === 'open' && document.activeElement && island.contains(document.activeElement)) {
       document.activeElement.blur();
     }
@@ -126,8 +125,8 @@ export function createIsland({ root, face, bridge }) {
       void content.offsetWidth; // restart the CSS animation
       content.classList.add(kind === 'open' ? 'enter-late' : 'enter');
     },
-    frame(bass) {
-      pill.style.setProperty('--pulse', (1 + bass * 0.36).toFixed(3));
+    frame(kick) {
+      pill.style.setProperty('--pulse', (1 + kick * 0.36).toFixed(3));
       settle();
     },
   };

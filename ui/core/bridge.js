@@ -34,7 +34,7 @@ function createTauriBridge() {
     setInteractive: (interactive) => invoke('set_interactive', { interactive: !!interactive }),
     onCursor: (fn) => on('cursor', fn),
     onToggle: (fn) => on('toggle', fn),
-    onBass: (fn) => on('bass', fn),
+    onAudio: (fn) => on('audio', fn),
     backdrop: (rects) => invoke('backdrop_luma', { rects }),
     media: {
       get: () => invoke('media_get'),

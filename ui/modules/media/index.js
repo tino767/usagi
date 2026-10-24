@@ -69,14 +69,13 @@ export default {
     }
 
     function update(m) {
-      if (m?.playing && !current.playing) face.flash(600);       // music started: delighted
       if (m?.available && current.available && m.title !== current.title) face.nod(200); // new track
       current = m || { available: false, playing: false };
       render(current);
     }
 
     async function command(cmd) {
-      face.flash(450);
+      face.nod();
       if (cmd === 'toggle') update({ ...current, playing: !current.playing }); // optimistic
       try { await system.media?.command(cmd); } catch {}
     }

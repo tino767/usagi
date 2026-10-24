@@ -14,6 +14,10 @@
   --rail-fg: #000000;      /* side rails sit on the wallpaper */
   --rail-dim: #9c9c9c;
   --rail-track: #b9b9b9;
+  /* bottom corners of anything sitting on the content area's bottom edge:
+     open island r80 minus the ~26px inset (30 sides, 22 bottom), so they run
+     concentric with the island's curve */
+  --r-fit: 54px;
   --spring: cubic-bezier(.34, 1.3, .5, 1);
   --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
@@ -91,8 +95,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 .face { display: block; line-height: 0; transition: transform 90ms linear; }
 .face svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.face .tongue { opacity: 0; transition: opacity .15s ease; }
-.face.tongue-out .tongue { opacity: 1; }
+.face .tongue {
+  opacity: 0;
+  transform-box: fill-box; transform-origin: 50% 0;
+  transition: opacity 50ms linear, transform 50ms linear;
+}
 
 .content { position: absolute; left: 30px; right: 30px; top: 62px; bottom: 22px; }
 [data-mode="open"] .content { display: block; }
@@ -154,6 +161,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .mgr-seg[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
 .mgr-grid {
   flex: 1; min-height: 0; overflow-y: auto;
+  border-radius: 18px 18px var(--r-fit) var(--r-fit);
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(92px, 1fr); gap: 8px;
 }
 .mgr-card {
@@ -162,6 +170,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   border-radius: 18px; border: 1px solid #2e2e2e; background: var(--surface); color: #ededed;
   transition: background .2s, color .2s, border-color .2s;
 }
+/* last-row corner cards follow the island's bottom curve */
+.mgr-card:nth-child(3n+1):nth-last-child(-n+3) { border-bottom-left-radius: var(--r-fit); padding-left: 22px; }
+.mgr-card:nth-child(3n):last-child { border-bottom-right-radius: var(--r-fit); }
 .mgr-card.on { background: var(--paper); border-color: var(--paper); color: var(--ink); }
 .mgr-top { display: flex; align-items: center; justify-content: space-between; }
 .mgr-icon { width: 18px; height: 18px; }

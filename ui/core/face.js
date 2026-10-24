@@ -1,12 +1,15 @@
 // usagi's face. Two eye states (closed: the "= ㅅ =" peek, open: "• ㅅ •"),
-// a tongue, and motion. Modules don't draw the face; they ask for reactions
+// a mouth, and motion. Modules don't draw the face; they ask for reactions
 // and the core blends them every frame:
 //
-//   flash(ms)   tongue out for ms             (delight)
 //   bounce(ms)  hop up and down for ms        (attention / ding)
 //   nod(ms)     dip down briefly              (acknowledge input)
 //   tilt(deg)   hold a tilt until changed     (ticking, curiosity)
-//   setBass(v)  0..1 audio energy, set by the core from system audio
+//
+// The audio is set by the core from system audio: kick bobs the head, vocal
+// opens the mouth. Nothing else opens the mouth.
+//
+//   setAudio(kick, vocal)  0..1 each
 
 const TONGUE = '#E0606A';
 
@@ -30,39 +33,45 @@ const OPEN = `
 
 export function createFace() {
   const wraps = [];
-  const s = { tongueUntil: 0, bounceUntil: 0, nodUntil: 0, tilt: 0, bass: 0, sensitivity: 1 };
-  let tongueShown = null;
+  const tongues = [];
+  const s = { bounceUntil: 0, nodUntil: 0, tilt: 0, kick: 0, vocal: 0 };
   let lastTransform = '';
+  let lastMouth = '';
 
   return {
     mount(el, variant) {
       el.classList.add('face');
       el.innerHTML = variant === 'open' ? OPEN : CLOSED;
       wraps.push(el);
+      tongues.push(el.querySelector('.tongue'));
     },
-    flash(ms = 600) { s.tongueUntil = Math.max(s.tongueUntil, performance.now() + ms); },
     bounce(ms = 1500) { s.bounceUntil = Math.max(s.bounceUntil, performance.now() + ms); },
     nod(ms = 160) { s.nodUntil = performance.now() + ms; },
     tilt(deg = 0) { s.tilt = deg; },
-    setBass(v) { s.bass = v; },
-    setSensitivity(v) { s.sensitivity = v; },
-    get bass() { return s.bass * s.sensitivity; },
+    setAudio(kick, vocal) { s.kick = kick; s.vocal = vocal; },
+    get kick() { return s.kick; },
+    get vocal() { return s.vocal; },
 
     frame(now) {
-      const b = s.bass * s.sensitivity;
-      let y = -b * 3.2;
+      let y = -s.kick * 3.2;
       if (now < s.nodUntil) y += 2.2;
       if (now < s.bounceUntil) y -= Math.abs(Math.sin(now / 110)) * 5;
-      const scale = 1 + b * 0.06;
+      const scale = 1 + s.kick * 0.06;
       const t = `translateY(${y.toFixed(2)}px) scale(${scale.toFixed(3)}) rotate(${s.tilt}deg)`;
       if (t !== lastTransform) {
         lastTransform = t;
         for (const el of wraps) el.style.transform = t;
       }
-      const tongue = now < s.tongueUntil;
-      if (tongue !== tongueShown) {
-        tongueShown = tongue;
-        for (const el of wraps) el.classList.toggle('tongue-out', tongue);
+      // Mouth: hidden when quiet, grows down from under the ㅅ as the voice swells.
+      const v = s.vocal < 0.06 ? 0 : s.vocal;
+      const opacity = Math.min(1, v * 3).toFixed(2);
+      const open = `scaleY(${(0.35 + 0.65 * v).toFixed(2)})`;
+      if (opacity + open !== lastMouth) {
+        lastMouth = opacity + open;
+        for (const el of tongues) {
+          el.style.opacity = opacity;
+          el.style.transform = open;
+        }
       }
     },
   };

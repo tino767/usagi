@@ -20,7 +20,6 @@ export default {
     const { h, face, store } = ctx;
     // ctx.h(tag, props, ...children)    DOM helper
     // ctx.icons                          shared glyphs
-    // ctx.face.flash(ms)                 tongue out
     // ctx.face.bounce(ms)                hop
     // ctx.face.nod(ms)                   small dip
     // ctx.face.tilt(deg)                 hold a tilt (0 to reset)
@@ -28,7 +27,7 @@ export default {
     // ctx.island.isFront()               is this module open right now?
     // ctx.island.open() / close()
     // ctx.system.media / ctx.system.volume   OS bridge (see ui/core/bridge.js)
-    // ctx.audio.bass                     current 0..1 bass level
+    // ctx.audio.kick / ctx.audio.vocal   current 0..1 kick and vocal levels
     // ctx.store.get(key, fallback) / set(key, value)   persisted, scoped to this module
 
     let count = store.get('count', 0);
@@ -41,7 +40,7 @@ export default {
         count += 1;
         label.textContent = String(count);
         store.set('count', count);
-        face.flash(400);
+        face.nod();
       },
     });
 

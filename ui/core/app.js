@@ -9,7 +9,7 @@ import { createContrast } from './contrast.js';
 import { createRotation, SYSTEM_ID } from './rotation.js';
 import { createManager } from './manager.js';
 import { createStore } from './store.js';
-import { createBass } from './audio.js';
+import { createAudio } from './audio.js';
 import { createBridge } from './bridge.js';
 
 const bridge = createBridge();
@@ -52,7 +52,6 @@ function makeCtx(id) {
     svg,
     icons,
     face: {
-      flash: (ms) => face.flash(ms),
       bounce: (ms) => face.bounce(ms),
       nod: (ms) => face.nod(ms),
       tilt: (deg) => face.tilt(deg),
@@ -65,7 +64,7 @@ function makeCtx(id) {
       close: () => island.setMode('inactive'),
     },
     system: { media: bridge.media, volume: bridge.volume },
-    audio: { get bass() { return face.bass; } },
+    audio: { get kick() { return face.kick; }, get vocal() { return face.vocal; } },
     store: store.scope(id),
   };
 }
@@ -78,12 +77,13 @@ rotation.start();
 bridge.onToggle?.(() => island.toggle());
 
 // ---- frame loop ----
-const bass = createBass(bridge);
+const audio = createAudio(bridge);
 
 function frame(now) {
-  face.setBass(bass.read(now, mediaPlaying));
+  const { kick, vocal } = audio.read(now, mediaPlaying);
+  face.setAudio(kick, vocal);
   face.frame(now);
-  island.frame(face.bass);
+  island.frame(kick);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
