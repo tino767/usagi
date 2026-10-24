@@ -7,12 +7,16 @@
 //   tilt(deg)   hold a tilt until changed     (ticking, curiosity)
 //   sing(ms)    open the mouth, closing over ms (alarm chime)
 //
+// The open eyes also blink on their own every few seconds, sometimes twice.
+//
 // The audio is set by the core from system audio: kick bobs the head. Vocal is
 // kept for modules to read but doesn't move the mouth; only sing() does.
 //
 //   setAudio(kick, vocal)  0..1 each
 
 const TONGUE = '#E0606A';
+const BLINK_MS = 150;
+const nextBlink = (now) => now + 5000 + Math.random() * 7000;
 
 const CLOSED = `
 <svg viewBox="0 0 90 20" fill="currentColor" aria-hidden="true">
@@ -28,16 +32,20 @@ const OPEN = `
 <svg viewBox="0 0 70 18" fill="currentColor" aria-hidden="true">
   <path class="tongue" fill="${TONGUE}" d="M31 11.2Q31 17.6 35 17.6Q39 17.6 39 11.2L35 9.55Z"/>
   <path d="M46.8309 11.0557C39.9111 9.00423 37.7493 7.16498 37.4647 2.55566H32.5351C32.2506 7.16498 30.0888 9.00423 23.1689 11.0557L24.6478 15.5557C30.7417 13.5972 33.0627 12.3121 34.9999 9.55566C36.9372 12.3121 39.2582 13.5972 45.352 15.5557L46.8309 11.0557Z"/>
-  <circle cx="7.77778" cy="7.77778" r="7.77778"/>
-  <circle cx="62.2221" cy="7.77778" r="7.77778"/>
+  <circle class="eye" cx="7.77778" cy="7.77778" r="7.77778"/>
+  <circle class="eye" cx="62.2221" cy="7.77778" r="7.77778"/>
 </svg>`;
 
 export function createFace() {
   const wraps = [];
   const tongues = [];
+  const eyes = [];
   const s = { bounceUntil: 0, nodUntil: 0, tilt: 0, singAt: 0, singMs: 0, kick: 0, vocal: 0 };
+  let blinkAt = nextBlink(performance.now());
+  let twice = false;
   let lastTransform = '';
   let lastMouth = '';
+  let lastEyes = '';
 
   return {
     mount(el, variant) {
@@ -45,6 +53,7 @@ export function createFace() {
       el.innerHTML = variant === 'open' ? OPEN : CLOSED;
       wraps.push(el);
       tongues.push(el.querySelector('.tongue'));
+      eyes.push(...el.querySelectorAll('.eye'));
     },
     bounce(ms = 1500) { s.bounceUntil = Math.max(s.bounceUntil, performance.now() + ms); },
     nod(ms = 160) { s.nodUntil = performance.now() + ms; },
@@ -75,6 +84,17 @@ export function createFace() {
           el.style.opacity = opacity;
           el.style.transform = open;
         }
+      }
+      // Blink: squash the eyes to a line and back; one in five is a double blink.
+      if (now >= blinkAt + BLINK_MS) {
+        twice = !twice && Math.random() < 0.2;
+        blinkAt = twice ? now + 90 : nextBlink(now);
+      }
+      const b = (now - blinkAt) / BLINK_MS;
+      const lid = b >= 0 && b < 1 ? `scaleY(${(1 - 0.88 * Math.sin(Math.PI * b)).toFixed(2)})` : '';
+      if (lid !== lastEyes) {
+        lastEyes = lid;
+        for (const el of eyes) el.style.transform = lid;
       }
     },
   };

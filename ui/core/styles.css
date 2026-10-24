@@ -145,7 +145,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 [data-mode="welcome"] .peek { display: flex; animation: fade .25s .12s both; }
 /* same box as the tab face so the ㅅ lines up across open / close */
-.peek .face { width: 104px; height: 27px; }
+.peek .face { width: 120px; height: 31px; }
 
 .tab {
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -157,7 +157,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 [data-mode="open"] .tab { display: flex; }
 .tab { transition: transform .45s var(--spring); }
 .tucked .tab { transform: translateX(-50%) translateY(-52px); }
-.tab .face { width: 104px; height: 27px; }
+.tab .face { width: 120px; height: 31px; }
 .tab:focus-visible { outline-color: var(--paper); outline-offset: 3px; }
 
 .face { display: block; line-height: 0; transition: transform 90ms linear; }
@@ -167,6 +167,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transform-box: fill-box; transform-origin: 50% 0;
   transition: opacity 50ms linear, transform 50ms linear;
 }
+.face .eye { transform-box: fill-box; transform-origin: 50% 50%; }
 
 .content { position: absolute; left: 22px; right: 22px; top: calc(62px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
 [data-mode="open"] .content { display: block; }
