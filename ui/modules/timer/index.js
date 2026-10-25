@@ -23,15 +23,14 @@ export default {
     let loop = 0;
     let alarm = 0;          // interval while the alarm rings
 
-    const status = h('span', { class: 'eyebrow' });
-    const time = h('span', { class: 't-time' });
+    const time = h('span', { class: 't-time', role: 'timer' });
     const playBtn = h('button', { class: 'btn-round', onclick: toggle });
     const bar = h('div', { class: 't-bar-fill' });
     const chips = PRESETS.map((m) => h('button', { class: 'chip', 'aria-label': `Set ${m} minutes`, onclick: () => preset(m) }, `${m}m`));
 
     const el = h('div', { class: 't-root' },
       h('div', { class: 't-top' },
-        h('div', { class: 't-readout' }, status, time),
+        time,
         h('div', { class: 't-controls' },
           h('button', { class: 'chip t-step', 'aria-label': 'Remove one minute', onclick: () => bump(-60) }, '−1m'),
           playBtn,
@@ -46,7 +45,8 @@ export default {
       const r = remaining();
       const secs = Math.ceil(r);
       time.textContent = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
-      status.textContent = running() ? 'Running' : r <= 0 ? "Time's up" : r >= total ? 'Ready' : 'Paused';
+      // state reads from the play button (pause / play / red stop) and the bar
+      time.setAttribute('aria-label', `${time.textContent}, ${running() ? 'running' : r <= 0 ? "time's up" : r >= total ? 'ready' : 'paused'}`);
       playBtn.innerHTML = alarm ? icons.stop : running() ? icons.pause : icons.play;
       playBtn.setAttribute('aria-label', alarm ? 'Stop alarm' : running() ? 'Pause timer' : 'Start timer');
       playBtn.classList.toggle('t-ringing', !!alarm);

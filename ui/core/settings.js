@@ -1,8 +1,8 @@
 // The built-in Settings page. Always last in the rotation; can't be removed.
 //
-// Home is a row of category tiles at the normal island size. Picking one grows
-// the island down just enough to fit that page (up to 512×460); Back, scrolling
-// away or closing shrinks it again. The face stays up here even when auto-hide is on.
+// Home is a row of category tiles at the modules' size (512×180). Picking one
+// grows the island down just enough to fit that page (up to 512×460); Back,
+// scrolling away or closing shrinks it again.
 //
 // To add a setting: give it a default in prefs.js, react to it in app.js,
 // add a row to one of the pages below, and add its key to that page's reset.
@@ -12,18 +12,19 @@ import { icons } from './icons.js';
 import { SYSTEM_ID } from './rotation.js';
 import { DEFAULTS } from './prefs.js';
 
-// A page grows the island to fit its content, between the normal open height
-// and PAGE_MAX_H; anything taller scrolls. CONTENT_PAD is .content's top + bottom
-// inset; CONTENT_W its width once open, so a mid-animation island measures the same.
-const PAGE_MIN_H = 224;
+// Settings is the only page that sets the island's height: home keeps the
+// modules' size, and a page grows the island to fit its content, between
+// PAGE_MIN_H (that same size, island.js) and PAGE_MAX_H; anything taller
+// scrolls. CONTENT_PAD is .content's top + bottom inset; CONTENT_W its width
+// once open, so a mid-animation island measures the same.
+const PAGE_MIN_H = 180;
 const PAGE_MAX_H = 460;
 const CONTENT_PAD = 62 + 22;
 const CONTENT_W = 512 - 22 - 22;
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const RAILS = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient'], ['glass', 'Glass']];
-const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
-const DELAYS = [3, 5, 10];
+const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];
 // Gradient colors are capped at this relative luminance so white text on the
 // bottom of the island stays above ~7:1.
 const MAX_LUMA = 0.08;
@@ -35,7 +36,6 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
     id: SYSTEM_ID,
     name: 'Settings',
     icon: icons.settings,
-    keepFace: true,
 
     create(ctx) {
       let page = null; // null = home | 'modules' | 'appearance' | 'behavior' | 'about'
@@ -154,7 +154,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         const tiles = [
           ['modules', 'Modules', icons.grid, `${rotation.size()} of ${total} on`],
           ['appearance', 'Appearance', icons.appearance, `${bg} · ${Math.round(prefs.get('scale') * 100)}%`],
-          ['behavior', 'Behavior', icons.behavior, prefs.get('face') === 'idle' ? `Hides after ${prefs.get('faceDelay')}s` : 'Face always up'],
+          ['behavior', 'Behavior', icons.behavior, IS_WINDOWS && prefs.get('hideFullscreen') ? 'Off in fullscreen' : 'Always on top'],
           ['about', 'About', icons.info, version ? `v${version}` : 'usagi'],
         ];
         return h('div', { class: 'set-home' }, ...tiles.map(([id, label, icon, sub]) =>
@@ -272,13 +272,8 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       // ---------- behavior ----------
 
       function behaviorPage() {
-        const idle = prefs.get('face') === 'idle';
         return h('div', { class: 'set-page' }, header(titleEl('Behavior')),
-          scroll(['Reset behavior', ['face', 'faceDelay', 'hideFullscreen']],
-            h('div', { class: 'set-block' }, eyebrow('Face'), group(
-              row('When open', seg('Face when open', FACE, prefs.get('face'), (v) => prefs.set('face', v))),
-              row('Hide after', seg('Hide after', DELAYS.map((d) => [d, `${d}s`]), prefs.get('faceDelay'), (v) => prefs.set('faceDelay', v), { disabled: !idle }),
-                { off: !idle, sub: 'Hover the top edge to bring him back' }))),
+          scroll(['Reset behavior', ['hideFullscreen']],
             h('div', { class: 'set-block' }, eyebrow('System'), group(
               row('Hide over fullscreen apps',
                 toggle('Hide over fullscreen apps', prefs.get('hideFullscreen'), (v) => { prefs.set('hideFullscreen', v); render(); }, { disabled: !IS_WINDOWS }),

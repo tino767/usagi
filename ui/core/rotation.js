@@ -67,7 +67,6 @@ export function createRotation({ island, store, catalog, makeCtx }) {
     const list = ids();
     index = Math.max(0, Math.min(index, list.length - 1));
     const id = list[index];
-    const def = catalog.get(id);
     const inst = instance(id);
     const open = island.mode === 'open';
 
@@ -82,16 +81,14 @@ export function createRotation({ island, store, catalog, makeCtx }) {
       }
     }
     applySize();
-    island.pinFace(!!def.keepFace);
     renderRail(list);
   }
 
-  // A module can change size while showing (Settings grows into its pages):
-  // instance.size() wins over the definition's static size.
+  // Every module shares the open island's size. Only Settings sets its own
+  // height (taller home, growing into its pages), through instance.size().
   function applySize() {
-    const def = catalog.get(currentId);
-    const inst = instances.get(currentId);
-    island.setOpenSize((inst?.size ? inst.size() : def?.size) || null);
+    const inst = currentId === SYSTEM_ID ? instances.get(currentId) : null;
+    island.setOpenSize(inst?.size?.() || null);
   }
 
   function go(i) { index = i; render(); }

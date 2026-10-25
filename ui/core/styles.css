@@ -64,14 +64,11 @@ button svg { pointer-events: none; }
   left: 50%;
   transform: translateX(-50%);
   width: var(--w, 76px);
-  height: calc(var(--h, 30px) - var(--tuck));
+  height: var(--h, 30px);
   background: var(--ink);
   border-radius: 0 0 var(--r, 15px) var(--r, 15px);
   transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease;
-  /* face auto-hide: the open face tab slides off screen and everything moves up */
-  --tuck: 0px;
 }
-.island.tucked { --tuck: 40px; }
 
 /* open-island backgrounds (Settings › Appearance) */
 /* an ink veil over the dots fades them in from the top; it never fully clears,
@@ -166,8 +163,6 @@ button svg { pointer-events: none; }
   border-radius: 0 0 24px 24px;
 }
 [data-mode="open"] .tab { display: flex; }
-.tab { transition: transform .45s var(--spring); }
-.tucked .tab { transform: translateX(-50%) translateY(-52px); }
 .tab .face { width: 120px; height: 31px; }
 .tab:focus-visible { outline-color: var(--paper); outline-offset: 3px; }
 
@@ -180,13 +175,14 @@ button svg { pointer-events: none; }
 }
 .face .eye { transform-box: fill-box; transform-origin: 50% 50%; }
 
-.content { position: absolute; left: 22px; right: 22px; top: calc(62px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
+.content { position: absolute; left: 22px; right: 22px; top: 62px; bottom: 22px; }
 [data-mode="open"] .content { display: block; }
 .content.enter { animation: enter .3s var(--spring) both; }
 .content.enter-late { animation: enter .32s var(--spring) .18s both; }
 
 /* ---------- side rails ---------- */
-.rail { position: absolute; top: calc(74px - var(--tuck)); width: 24px; flex-direction: column; align-items: center; color: var(--rail-fg); transition: color .2s, top .45s var(--spring); }
+/* just under the open island's 26px ears */
+.rail { position: absolute; top: 30px; width: 24px; flex-direction: column; align-items: center; color: var(--rail-fg); transition: color .2s; }
 [data-mode="open"] .rail { display: flex; animation: fade .3s .2s both; }
 .rail-left { left: -29px; }
 .rail-left:empty { display: none !important; }
@@ -233,10 +229,11 @@ button svg { pointer-events: none; }
 
 .set-home { height: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 /* centered stack, like the module grid, so content stays clear of the
-   curved corners and every tile lines up the same */
+   curved corners and every tile lines up the same; sized to fit the
+   modules' 96 tall content */
 .set-tile {
-  min-width: 0; padding: 0 10px 6px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  min-width: 0; padding: 0 10px 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   text-align: center; border-radius: 18px;
   background: var(--surface);
   transition: background .2s, transform .15s ease-out;
@@ -247,13 +244,13 @@ button svg { pointer-events: none; }
 .set-tile:first-child { border-bottom-left-radius: var(--r-fit); }
 .set-tile:last-child { border-bottom-right-radius: var(--r-fit); }
 .set-tile-icon {
-  width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px;
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
   background: #222; transition: background .2s;
 }
 .set-tile:hover .set-tile-icon { background: #2a2a2a; }
-.set-tile-icon svg { width: 20px; height: 20px; }
-.set-tile-text { max-width: 100%; display: flex; flex-direction: column; gap: 2px; }
+.set-tile-icon svg { width: 18px; height: 18px; }
+.set-tile-text { max-width: 100%; display: flex; flex-direction: column; gap: 0; line-height: 1.35; }
 .set-tile-label { font-size: 13px; font-weight: 600; }
 .set-tile-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -359,6 +356,6 @@ button svg { pointer-events: none; }
 @keyframes enter { from { opacity: 0; transform: translateY(8px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .usagi, .island, .ear, .face, .dot span, .tab, .content, .rail { transition: none; }
+  .usagi, .island, .ear, .face, .dot span, .rail { transition: none; }
   .content.enter, .content.enter-late { animation: fade .15s both; }
 }

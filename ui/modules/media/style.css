@@ -1,19 +1,20 @@
-/* the cover sits 48px from the island's left and bottom edges (22 content
-   inset + 26 padding on the left, centered in the 140 tall content below), so
-   its corner (r32 = 80 − 48) runs concentric with the island's */
-.m-root { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 15px 0 26px; }
+/* one row. The cover sits 12px inside the 96 tall content on the left, top and
+   bottom (34px from the island's left and bottom edges); at r20 its corner
+   keeps ~22px from the island's r80 curve, the same gap the content keeps from
+   the straight edges. (A truly concentric corner, 80 − 34, would be a circle.) */
+.m-root { display: flex; align-items: center; gap: 16px; height: 100%; padding: 0 12px; }
 .m-art {
-  width: 88px; height: 88px; flex-shrink: 0;
+  width: 72px; height: 72px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 32px; background: #ececec center / cover no-repeat; color: #8a8a8a;
+  border-radius: 20px; background: #ececec center / cover no-repeat; color: #8a8a8a;
 }
-.m-art svg { width: 30px; height: 30px; }
+.m-art svg { width: 26px; height: 26px; }
 .m-art.has-art svg { display: none; }
 .m-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .m-title, .m-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .m-title { font-size: 16px; font-weight: 600; }
 /* long titles slide to their end and back, pausing at each end; the fades sit
-   in the 18px gaps either side so the text starts where it would at rest */
+   in the 16px gaps either side so the text starts where it would at rest */
 .m-title-text { display: inline-block; }
 .m-title.scrolls {
   margin: 0 -10px; padding: 0 10px; text-overflow: clip;

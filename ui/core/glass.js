@@ -61,7 +61,7 @@ export function createGlass({ island, bridge }) {
     live(true);
   }
 
-  // Follow the island as it opens, resizes and tucks the face away.
+  // Follow the island as it opens and resizes.
   function track() {
     raf = requestAnimationFrame(track);
     const t = target();

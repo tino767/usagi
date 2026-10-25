@@ -11,8 +11,6 @@ export default {
   icon: icons.spark,             // 24×24 SVG string in currentColor, shown in the position rail
   order: 10,                     // default position on first run
   styles: false,                 // true → loads ./style.css next to this file
-  // size: { w: 520, h: 224 },   // optional open-island size for this module
-  // keepFace: true,               // never auto-hide the face while this module is showing
 
   // Called once when the module joins the rotation (also at startup), and it
   // keeps living while other modules are showing — timers, listeners and
@@ -30,7 +28,6 @@ export default {
     // ctx.island.progress(0..1)          fill the collapsed pill left to right (null clears)
     // ctx.island.isFront()               is this module open right now?
     // ctx.island.open() / close()
-    // ctx.island.resize()                re-read size() from the returned instance (size changes while open)
     // ctx.system.media / ctx.system.volume   OS bridge (see ui/core/bridge.js)
     // ctx.audio.kick / ctx.audio.vocal   current 0..1 kick and vocal levels
     // ctx.store.get(key, fallback) / set(key, value)   persisted, scoped to this module
@@ -54,7 +51,7 @@ export default {
     }, label, button);
 
     return {
-      el,              // required: the panel content (468×140 by default)
+      el,              // required: the panel content, 468×96 (the same for every module)
       // rail,         // optional: element for the left side rail (see media)
       show() {},       // optional: became visible
       hide() {},       // optional: hidden (island closed or scrolled away)

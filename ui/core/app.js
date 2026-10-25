@@ -30,8 +30,6 @@ const applyBackground = () => {
   glass.setOn(prefs.get('background') === 'glass' && !prefs.get('glassPerformance'));
 };
 ['background', 'gradient', 'dotsPulse', 'glassPerformance'].forEach((key) => prefs.watch(key, applyBackground));
-const applyFace = () => island.setFaceHide(prefs.get('face'), prefs.get('faceDelay') * 1000);
-['face', 'faceDelay'].forEach((key) => prefs.watch(key, applyFace));
 prefs.watch('hideFullscreen', (v) => bridge.setHideFullscreen?.(v));
 
 // ---- load modules from src/renderer/modules/<id>/index.js ----
@@ -102,7 +100,7 @@ function frame(now) {
   const { kick, vocal } = audio.read(now, mediaPlaying);
   face.setAudio(kick, vocal);
   face.frame(now);
-  island.frame(kick, now);
+  island.frame(kick);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
