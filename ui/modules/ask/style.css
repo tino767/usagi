@@ -1,0 +1,4 @@
+/* usagi himself fills the panel (the core's tab, summoned); the content only
+   carries his answer for screen readers */
+.ask-root { height: 100%; }
+.ask-said { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -11,6 +11,7 @@
   --line: #2b2b2b;
   --muted: #a6a6a6;        /* secondary text on ink (8.4:1) */
   --tongue: #E0606A;
+  --earring: #aba2a2;
   --rail-fg: #000000;      /* side rails sit on the wallpaper */
   --rail-dim: #9c9c9c;
   --rail-track: #b9b9b9;
@@ -156,15 +157,25 @@ button svg { pointer-events: none; }
 .peek .face { width: 120px; height: 31px; }
 
 .tab {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%); transform-origin: 50% 100%;
   width: 168px; height: 48px;
-  align-items: center; justify-content: center;
-  background: var(--paper); color: var(--ink);
-  border-radius: 0 0 24px 24px;
+  color: var(--ink);
+  transition: transform .6s var(--spring);
 }
-[data-mode="open"] .tab { display: flex; }
-.tab .face { width: 120px; height: 31px; }
+[data-mode="open"] .tab { display: block; }
 .tab:focus-visible { outline-color: var(--paper); outline-offset: 3px; }
+/* usagi in full: the tab is the bottom 48px of his 84px head; the rest of it
+   and his ears stay above the screen edge until a module summons him */
+.bunny {
+  position: absolute; left: 0; bottom: 0; width: 100%; height: 84px;
+  background: var(--paper); border-radius: 0 0 24px 24px;
+}
+.bunny-ears { position: absolute; left: 0; bottom: calc(100% - 1px); width: 168px; height: 201px; overflow: visible; }
+.tab .face { position: absolute; left: 24px; bottom: 8.5px; width: 120px; height: 31px; }
+/* summoned: slides straight down, full size, until his chin is 34px off the
+   island's bottom; his ears still run up past the screen edge. Above the
+   content so clicks reach him */
+.summoned .tab { z-index: 1; transform: translateX(-50%) translateY(98px); }
 
 .face { display: block; line-height: 0; transition: transform 90ms linear; }
 .face svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -173,7 +184,16 @@ button svg { pointer-events: none; }
   transform-box: fill-box; transform-origin: 50% 0;
   transition: opacity 50ms linear, transform 50ms linear;
 }
-.face .eye { transform-box: fill-box; transform-origin: 50% 50%; }
+/* "…" between his ears while he thinks, about halfway up them */
+.thought {
+  position: absolute; left: 50%; bottom: calc(100% + 72px); transform: translateX(-50%);
+  display: flex; gap: 5px; opacity: 0; transition: opacity .2s;
+}
+.thought i { width: 8px; height: 8px; border-radius: 4px; background: var(--paper); }
+.thinking .thought { opacity: 1; }
+.thinking .thought i { animation: think 1s ease-in-out infinite; }
+.thought i:nth-child(2) { animation-delay: .15s; }
+.thought i:nth-child(3) { animation-delay: .3s; }
 
 .content { position: absolute; left: 22px; right: 22px; top: 62px; bottom: 22px; }
 [data-mode="open"] .content { display: block; }
@@ -354,8 +374,10 @@ button svg { pointer-events: none; }
 
 @keyframes fade { from { opacity: 0; } }
 @keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+@keyframes think { 0%, 60%, 100% { opacity: .3; transform: none; } 30% { opacity: 1; transform: translateY(-4px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .usagi, .island, .ear, .face, .dot span, .rail { transition: none; }
+  .usagi, .island, .ear, .face, .tab, .dot span, .rail { transition: none; }
+  .thinking .thought i { animation: none; opacity: 1; }
   .content.enter, .content.enter-late { animation: fade .15s both; }
 }

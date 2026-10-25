@@ -45,7 +45,8 @@ canvas to match. Visuals are owned by the canvas; behavior is owned by the code.
 - Content area inside the open island: 468×96 (left/right 22, top 62, bottom 22), the same for every module and Settings home; up to 468×376 on a Settings category page. Modules lay out as one primary row (at most a slim second row, like the timer's presets) and skip labels the rail icon already gives. Side and bottom insets must stay equal so `--r-fit` (80 − 22 = 58) runs concentric with the island's corners.
 - The overlay window is 760×580 so a Settings page fits at 125% scale; the extra area is click-through.
 - Rails: 20px icon, 8px-wide capsule slider/dots (active dot 24px tall), 17px from the island's sides, top 30, just under the ears.
-- Face reactions are requested by modules (`ctx.face.bounce/nod/tilt/sing`) and blended by the core. Modules never draw the face.
+- Face reactions are requested by modules (`ctx.face.bounce/nod/shake/tilt/sing/blink/think`) and blended by the core. Modules never draw the face.
+- The face tab is usagi's whole body: the tab is the bottom 48px of his 84px head, with the rest of it and his ears (inner ears in the tongue color, two #aba2a2 earrings on the right) above the screen edge. The ears are 200px, longer than the island, so their tips never show: they seem to go on forever. A module that returns `summon: { label, click }` (Ask usagi) brings him out: while it's showing the tab slides straight down 98px, never scaled, until his chin is 34px off the island's bottom, and clicking him calls `click` instead of closing. Scrolling away tucks him back up into the close button. Reactions move only his face, inside his head, never the head itself.
 - Audio drives the face: the kick bobs the head. The mouth (tongue) opens only on `ctx.face.sing`, used by the timer's alarm; system-audio vocals don't move it.
 
 ## Rules for changes

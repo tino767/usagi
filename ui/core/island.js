@@ -4,6 +4,11 @@
 //   welcome   "= ㅅ =" peek — cursor is nearby (or a module asked for attention)
 //   open      expanded panel with the active module — after clicking the face
 // Clicking the face while open closes it again.
+//
+// The face tab is usagi himself: the bottom of his head, with the rest of it
+// and his ears hidden above the screen edge. A module can summon him
+// (setSummon): while it's showing he slides down into full view, and clicking
+// him goes to the module instead of closing. He tucks back up when it's gone.
 
 import { h, svg } from './dom.js';
 
@@ -31,6 +36,20 @@ const EAR = 22;
 // Each ear reaches one unit under the island so no hairline seam shows at fractional pixels.
 const EAR_L = '<svg class="ear ear-l" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 0H17V16H16A16 16 0 0 0 0 0Z"/></svg>';
 const EAR_R = '<svg class="ear ear-r" viewBox="0 0 16 16" aria-hidden="true"><path d="M16 0H-1V16H0A16 16 0 0 1 16 0Z"/></svg>';
+// usagi's ears, standing on top of his head (the head's top is y 200; the extra
+// unit tucks under it). Far longer than the island is tall: even summoned, the
+// tips stay past the screen edge, so they seem to go on forever. Earrings low
+// on the right ear, where they show while he's summoned.
+const BUNNY_EARS = `<svg class="bunny-ears" viewBox="0 0 168 201" aria-hidden="true">
+  <path fill="var(--paper)" d="M0 24.5A24.5 24.5 0 0 1 24.5 0H33.8A24.5 24.5 0 0 1 58.3 24.5V201H0Z"/>
+  <path fill="var(--paper)" d="M109.7 24.5A24.5 24.5 0 0 1 134.2 0H143.5A24.5 24.5 0 0 1 168 24.5V201H109.7Z"/>
+  <path fill="var(--tongue)" d="M16.3 200V29.65A12.85 12.85 0 0 1 42 29.65V200Z"/>
+  <path fill="var(--tongue)" d="M126 200V29.65A12.85 12.85 0 0 1 151.7 29.65V200Z"/>
+  <circle fill="var(--earring)" cx="168" cy="164.7" r="5"/>
+  <circle fill="var(--earring)" cx="168" cy="181.5" r="5"/>
+</svg>`;
+// Delay before he steps out when the island opens, so it has grown around him first.
+const SUMMON_DELAY = 160;
 
 export function createIsland({ root, face, bridge }) {
   let mode = 'inactive';
@@ -43,6 +62,8 @@ export function createIsland({ root, face, bridge }) {
   // background
   let background = 'solid';
   let dotsPulse = true;
+  let summon = null; // { label, click } from the showing module
+  let summonTimer = 0;
 
   const peekFace = h('span');
   const tabFace = h('span');
@@ -59,7 +80,13 @@ export function createIsland({ root, face, bridge }) {
   const status = h('span', { class: 'status' });
   const statuses = new Map(); // owner → text; the oldest still-set owner keeps the slot
   const peek = h('button', { class: 'peek', 'aria-label': 'Open usagi', onclick: () => setMode('open') }, peekFace);
-  const tab = h('button', { class: 'tab', 'aria-label': 'Close usagi', onclick: () => setMode(near ? 'welcome' : 'inactive') }, tabFace);
+  // the tab is the bottom of his head; the body runs up past the screen edge
+  const body = h('span', { class: 'bunny' }, svg(BUNNY_EARS), tabFace);
+  const tab = h('button', {
+    class: 'tab',
+    'aria-label': 'Close usagi',
+    onclick: () => (summon && mode === 'open' ? summon.click() : setMode(near ? 'welcome' : 'inactive')),
+  }, body);
   const content = h('div', { class: 'content' });
   const railLeft = h('div', { class: 'rail rail-left' });
   const railRight = h('div', { class: 'rail rail-right' });
@@ -79,12 +106,22 @@ export function createIsland({ root, face, bridge }) {
     island.style.setProperty('--ear', `${Math.min(size.ear ?? EAR, size.h - size.r)}px`);
   }
 
+  // Out in full while open with a summoning module; tucked into the tab otherwise.
+  function applySummon(delay = 0) {
+    clearTimeout(summonTimer);
+    const out = mode === 'open' && !!summon;
+    tab.setAttribute('aria-label', out ? summon.label : 'Close usagi');
+    if (out && delay) summonTimer = setTimeout(() => island.classList.add('summoned'), delay);
+    else island.classList.toggle('summoned', out);
+  }
+
   function setMode(next) {
     if (next === mode) return;
     const prev = mode;
     mode = next;
     el.dataset.mode = next;
     applySize();
+    applySummon(next === 'open' ? SUMMON_DELAY : 0);
     if (prev === 'open' && document.activeElement && island.contains(document.activeElement)) {
       document.activeElement.blur();
     }
@@ -134,6 +171,12 @@ export function createIsland({ root, face, bridge }) {
     onMode(fn) { modeListeners.add(fn); return () => modeListeners.delete(fn); },
     onWheel(fn) { island.addEventListener('wheel', fn, { passive: true }); },
     setOpenSize(size) { openSize = size; applySize(); },
+    /** The showing module's { label, click } to bring usagi out in full, or null. */
+    setSummon(next) {
+      if (next === summon) return;
+      summon = next;
+      applySummon();
+    },
     setScale(value) {
       scale = BASE_SCALE * value;
       el.style.setProperty('--scale', String(scale));

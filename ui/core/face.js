@@ -2,10 +2,13 @@
 // a mouth, and motion. Modules don't draw the face; they ask for reactions
 // and the core blends them every frame:
 //
-//   bounce(ms)  hop up and down for ms        (attention / ding)
-//   nod(ms)     dip down briefly              (acknowledge input)
-//   tilt(deg)   hold a tilt until changed     (ticking, curiosity)
-//   sing(ms)    open the mouth, closing over ms (alarm chime)
+//   bounce(ms)       hop up and down for ms        (attention / ding)
+//   nod(ms, depth)   dip down briefly              (acknowledge input; deeper for a "yes")
+//   shake(ms)        slide side to side            ("no")
+//   tilt(deg)        hold a tilt until changed     (ticking, curiosity)
+//   sing(ms)         open the mouth, closing over ms (alarm chime)
+//   blink(times)     blink now                     (puzzled)
+//   think(ms)        "…" between the ears          (pondering; only seen when he's out in full)
 //
 // The open eyes also blink on their own every few seconds, sometimes twice.
 //
@@ -16,6 +19,10 @@
 
 const TONGUE = '#E0606A';
 const BLINK_MS = 150;
+// Open eyes are circles drawn as fully rounded squares, so a blink can shrink
+// their height and keep the ends round. Squashing a circle instead leaves a
+// pointed lens whose tips smear into stray pixels at the eyes' sides.
+const EYE = 15.5556;
 const nextBlink = (now) => now + 5000 + Math.random() * 7000;
 
 const CLOSED = `
@@ -32,18 +39,20 @@ const OPEN = `
 <svg viewBox="0 0 70 18" fill="currentColor" aria-hidden="true">
   <path class="tongue" fill="${TONGUE}" d="M31 11.2Q31 17.6 35 17.6Q39 17.6 39 11.2L35 9.55Z"/>
   <path d="M46.8309 11.0557C39.9111 9.00423 37.7493 7.16498 37.4647 2.55566H32.5351C32.2506 7.16498 30.0888 9.00423 23.1689 11.0557L24.6478 15.5557C30.7417 13.5972 33.0627 12.3121 34.9999 9.55566C36.9372 12.3121 39.2582 13.5972 45.352 15.5557L46.8309 11.0557Z"/>
-  <circle class="eye" cx="7.77778" cy="7.77778" r="7.77778"/>
-  <circle class="eye" cx="62.2221" cy="7.77778" r="7.77778"/>
-</svg>`;
+  <rect class="eye" x="0" y="0" width="15.5556" height="15.5556" rx="7.77778"/>
+  <rect class="eye" x="54.4443" y="0" width="15.5556" height="15.5556" rx="7.77778"/>
+</svg><span class="thought" aria-hidden="true"><i></i><i></i><i></i></span>`;
 
 export function createFace() {
   const wraps = [];
   const tongues = [];
   const eyes = [];
-  const s = { bounceUntil: 0, nodUntil: 0, tilt: 0, singAt: 0, singMs: 0, kick: 0, vocal: 0 };
+  const s = { bounceUntil: 0, nodUntil: 0, nodDepth: 2.2, shakeAt: 0, shakeMs: 0, tilt: 0, singAt: 0, singMs: 0, thinkUntil: 0, kick: 0, vocal: 0 };
   let blinkAt = nextBlink(performance.now());
   let twice = false;
+  let extraBlinks = 0;
   let lastTransform = '';
+  let lastThink = false;
   let lastMouth = '';
   let lastEyes = '';
 
@@ -56,22 +65,33 @@ export function createFace() {
       eyes.push(...el.querySelectorAll('.eye'));
     },
     bounce(ms = 1500) { s.bounceUntil = Math.max(s.bounceUntil, performance.now() + ms); },
-    nod(ms = 160) { s.nodUntil = performance.now() + ms; },
+    nod(ms = 160, depth = 2.2) { s.nodUntil = performance.now() + ms; s.nodDepth = depth; },
+    shake(ms = 800) { s.shakeAt = performance.now(); s.shakeMs = ms; },
     tilt(deg = 0) { s.tilt = deg; },
     sing(ms = 600) { s.singAt = performance.now(); s.singMs = ms; },
+    blink(times = 1) { blinkAt = performance.now(); extraBlinks = times - 1; },
+    think(ms = 1500) { s.thinkUntil = performance.now() + ms; },
     setAudio(kick, vocal) { s.kick = kick; s.vocal = vocal; },
     get kick() { return s.kick; },
     get vocal() { return s.vocal; },
 
     frame(now) {
       let y = -s.kick * 3.2;
-      if (now < s.nodUntil) y += 2.2;
+      if (now < s.nodUntil) y += s.nodDepth;
       if (now < s.bounceUntil) y -= Math.abs(Math.sin(now / 110)) * 5;
+      // Shake: three side-to-side swings that die down.
+      const k = (now - s.shakeAt) / s.shakeMs;
+      const x = k >= 0 && k < 1 ? Math.sin(k * Math.PI * 6) * 7 * (1 - k) : 0;
       const scale = 1 + s.kick * 0.06;
-      const t = `translateY(${y.toFixed(2)}px) scale(${scale.toFixed(3)}) rotate(${s.tilt}deg)`;
+      const t = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${scale.toFixed(3)}) rotate(${s.tilt}deg)`;
       if (t !== lastTransform) {
         lastTransform = t;
         for (const el of wraps) el.style.transform = t;
+      }
+      const thinking = now < s.thinkUntil;
+      if (thinking !== lastThink) {
+        lastThink = thinking;
+        for (const el of wraps) el.classList.toggle('thinking', thinking);
       }
       // Mouth: hidden when quiet, pops open from under the ㅅ on sing() and eases shut.
       const p = (now - s.singAt) / s.singMs;
@@ -85,16 +105,21 @@ export function createFace() {
           el.style.transform = open;
         }
       }
-      // Blink: squash the eyes to a line and back; one in five is a double blink.
+      // Blink: close the eyes to a rounded dash and back; one in five is a double blink.
       if (now >= blinkAt + BLINK_MS) {
-        twice = !twice && Math.random() < 0.2;
-        blinkAt = twice ? now + 90 : nextBlink(now);
+        if (extraBlinks > 0) { extraBlinks -= 1; twice = true; blinkAt = now + 90; }
+        else { twice = !twice && Math.random() < 0.2; blinkAt = twice ? now + 90 : nextBlink(now); }
       }
       const b = (now - blinkAt) / BLINK_MS;
-      const lid = b >= 0 && b < 1 ? `scaleY(${(1 - 0.88 * Math.sin(Math.PI * b)).toFixed(2)})` : '';
+      const lidH = b >= 0 && b < 1 ? EYE * (1 - 0.88 * Math.sin(Math.PI * b)) : EYE;
+      const lid = lidH.toFixed(2);
       if (lid !== lastEyes) {
         lastEyes = lid;
-        for (const el of eyes) el.style.transform = lid;
+        for (const el of eyes) {
+          el.setAttribute('y', ((EYE - lidH) / 2).toFixed(2));
+          el.setAttribute('height', lid);
+          el.setAttribute('rx', (lidH / 2).toFixed(2));
+        }
       }
     },
   };

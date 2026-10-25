@@ -20,9 +20,12 @@ export default {
     // ctx.h(tag, props, ...children)    DOM helper
     // ctx.icons                          shared glyphs
     // ctx.face.bounce(ms)                hop
-    // ctx.face.nod(ms)                   small dip
+    // ctx.face.nod(ms, depth)            small dip (deeper for a "yes")
+    // ctx.face.shake(ms)                 shake the head ("no")
     // ctx.face.tilt(deg)                 hold a tilt (0 to reset)
     // ctx.face.sing(ms)                  open the mouth, closing over ms
+    // ctx.face.blink(times)              blink now
+    // ctx.face.think(ms)                 "…" between his ears (seen when summoned)
     // ctx.island.attention(ms)           peek out even if the cursor is away
     // ctx.island.status(text)            short text in place of the collapsed pill (null clears)
     // ctx.island.progress(0..1)          fill the collapsed pill left to right (null clears)
@@ -53,6 +56,8 @@ export default {
     return {
       el,              // required: the panel content, 468×96 (the same for every module)
       // rail,         // optional: element for the left side rail (see media)
+      // summon,       // optional: { label, click } — usagi steps out of his tab in full
+      //               //   while this module shows, and clicking him calls click (see ask)
       show() {},       // optional: became visible
       hide() {},       // optional: hidden (island closed or scrolled away)
       destroy() {},    // optional: removed from the rotation — clean up timers/listeners

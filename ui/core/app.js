@@ -66,9 +66,12 @@ function makeCtx(id) {
     icons,
     face: {
       bounce: (ms) => face.bounce(ms),
-      nod: (ms) => face.nod(ms),
+      nod: (ms, depth) => face.nod(ms, depth),
+      shake: (ms) => face.shake(ms),
       tilt: (deg) => face.tilt(deg),
       sing: (ms) => face.sing(ms),
+      blink: (times) => face.blink(times),
+      think: (ms) => face.think(ms),
     },
     island: {
       get mode() { return island.mode; },

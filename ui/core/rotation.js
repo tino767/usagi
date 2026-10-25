@@ -74,6 +74,7 @@ export function createRotation({ island, store, catalog, makeCtx }) {
       if (open && currentId) instances.get(currentId)?.hide?.();
       island.content.replaceChildren(inst.el);
       island.railLeft.replaceChildren(...(inst.rail ? [inst.rail] : []));
+      island.setSummon(inst.summon ?? null);
       currentId = id;
       if (open) {
         inst.show?.();
