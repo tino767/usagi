@@ -2,7 +2,8 @@
 //
 // Home is a row of category tiles at the modules' size (512×180). Picking one
 // grows the island down just enough to fit that page (up to 512×460); Back,
-// scrolling away or closing shrinks it again.
+// scrolling away or closing shrinks it again. The face stays up here even
+// when auto-hide is on.
 //
 // To add a setting: give it a default in prefs.js, react to it in app.js,
 // add a row to one of the pages below, and add its key to that page's reset.
@@ -25,6 +26,8 @@ const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const RAILS = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient'], ['glass', 'Glass']];
 const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];
+const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
+const DELAYS = [3, 5, 10];
 // Gradient colors are capped at this relative luminance so white text on the
 // bottom of the island stays above ~7:1.
 const MAX_LUMA = 0.08;
@@ -36,6 +39,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
     id: SYSTEM_ID,
     name: 'Settings',
     icon: icons.settings,
+    keepFace: true,
 
     create(ctx) {
       let page = null; // null = home | 'modules' | 'appearance' | 'behavior' | 'about'
@@ -68,7 +72,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       }
 
       // Lay the page out at its natural height for a moment to measure it. The
-      // island is scaled with a transform, so offsetHeight is in design px.
+      // island is scaled with zoom, which leaves offsetHeight in design px.
       // Search filtering doesn't re-render, so typing never resizes the island.
       function fit() {
         if (page && !root.isConnected) return;
@@ -154,7 +158,8 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         const tiles = [
           ['modules', 'Modules', icons.grid, `${rotation.size()} of ${total} on`],
           ['appearance', 'Appearance', icons.appearance, `${bg} · ${Math.round(prefs.get('scale') * 100)}%`],
-          ['behavior', 'Behavior', icons.behavior, IS_WINDOWS && prefs.get('hideFullscreen') ? 'Off in fullscreen' : 'Always on top'],
+          ['behavior', 'Behavior', icons.behavior, prefs.get('face') === 'idle' ? `Face hides after ${prefs.get('faceDelay')}s`
+            : IS_WINDOWS && prefs.get('hideFullscreen') ? 'Off in fullscreen' : 'Always on top'],
           ['about', 'About', icons.info, version ? `v${version}` : 'usagi'],
         ];
         return h('div', { class: 'set-home' }, ...tiles.map(([id, label, icon, sub]) =>
@@ -272,8 +277,13 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
       // ---------- behavior ----------
 
       function behaviorPage() {
+        const idle = prefs.get('face') === 'idle';
         return h('div', { class: 'set-page' }, header(titleEl('Behavior')),
-          scroll(['Reset behavior', ['hideFullscreen']],
+          scroll(['Reset behavior', ['face', 'faceDelay', 'hideFullscreen']],
+            h('div', { class: 'set-block' }, eyebrow('Face'), group(
+              row('When open', seg('Face when open', FACE, prefs.get('face'), (v) => prefs.set('face', v))),
+              row('Hide after', seg('Hide after', DELAYS.map((d) => [d, `${d}s`]), prefs.get('faceDelay'), (v) => prefs.set('faceDelay', v), { disabled: !idle }),
+                { off: !idle, sub: 'Hover the top edge to bring him back' }))),
             h('div', { class: 'set-block' }, eyebrow('System'), group(
               row('Hide over fullscreen apps',
                 toggle('Hide over fullscreen apps', prefs.get('hideFullscreen'), (v) => { prefs.set('hideFullscreen', v); render(); }, { disabled: !IS_WINDOWS }),

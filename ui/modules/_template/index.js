@@ -11,6 +11,7 @@ export default {
   icon: icons.spark,             // 24×24 SVG string in currentColor, shown in the position rail
   order: 10,                     // default position on first run
   styles: false,                 // true → loads ./style.css next to this file
+  // keepFace: true,             // never auto-hide the face while this module is showing
 
   // Called once when the module joins the rotation (also at startup), and it
   // keeps living while other modules are showing — timers, listeners and

@@ -47,15 +47,17 @@ button svg { pointer-events: none; }
 :focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
 
 /* ---------- island ---------- */
-/* --scale set by island.js; scales from the top edge so the island stays docked */
+/* --scale set by island.js. zoom, not transform: scale(): zoom lays out at the
+   final size so edges and text snap to whole screen pixels. A transform
+   rasterizes at design size and resamples, which blurs every edge (76px × 0.8
+   = 60.8px). left: 50% keeps the island centered and docked to the top edge */
 .usagi {
   position: absolute; inset: 0; pointer-events: none;
-  transform: scale(var(--scale, .8)); transform-origin: 50% 0;
-  transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+  zoom: var(--scale, .8);
   /* hairline strokes: 1 screen px whatever the scale. A 1px border scales to
      0.8px and lands on a different sub-pixel per edge, so sides render uneven.
      Use as an inset box-shadow: Chrome floors border widths to whole pixels
-     before the transform, so calc() on border-width has no effect */
+     before zooming, so calc() on border-width has no effect */
   --hair: calc(1px / var(--scale, .8));
 }
 .island {
@@ -65,11 +67,15 @@ button svg { pointer-events: none; }
   left: 50%;
   transform: translateX(-50%);
   width: var(--w, 76px);
-  height: var(--h, 30px);
+  height: calc(var(--h, 30px) - var(--tuck));
   background: var(--ink);
   border-radius: 0 0 var(--r, 15px) var(--r, 15px);
   transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease;
+  /* face auto-hide: the open face tab slides off screen and the content moves
+     up into its place; the rails stay put, just under the ears */
+  --tuck: 0px;
 }
+.island.tucked { --tuck: 40px; }
 
 /* open-island backgrounds (Settings › Appearance) */
 /* an ink veil over the dots fades them in from the top; it never fully clears,
@@ -172,10 +178,11 @@ button svg { pointer-events: none; }
 }
 .bunny-ears { position: absolute; left: 0; bottom: calc(100% - 1px); width: 168px; height: 201px; overflow: visible; }
 .tab .face { position: absolute; left: 24px; bottom: 8.5px; width: 120px; height: 31px; }
-/* summoned: slides straight down, full size, until his chin is 34px off the
-   island's bottom; his ears still run up past the screen edge. Above the
-   content so clicks reach him */
-.summoned .tab { z-index: 1; transform: translateX(-50%) translateY(98px); }
+/* summoned: slides straight down, full size, until his chin is 22px off the
+   island's bottom, the same inset as every module's content; his ears still
+   run up past the screen edge. Above the content so clicks reach him */
+.tucked .tab { transform: translateX(-50%) translateY(-52px); }
+.summoned .tab { z-index: 1; transform: translateX(-50%) translateY(110px); }
 
 .face { display: block; line-height: 0; transition: transform 90ms linear; }
 .face svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -195,7 +202,7 @@ button svg { pointer-events: none; }
 .thought i:nth-child(2) { animation-delay: .15s; }
 .thought i:nth-child(3) { animation-delay: .3s; }
 
-.content { position: absolute; left: 22px; right: 22px; top: 62px; bottom: 22px; }
+.content { position: absolute; left: 22px; right: 22px; top: calc(62px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
 [data-mode="open"] .content { display: block; }
 .content.enter { animation: enter .3s var(--spring) both; }
 .content.enter-late { animation: enter .32s var(--spring) .18s both; }
@@ -377,7 +384,7 @@ button svg { pointer-events: none; }
 @keyframes think { 0%, 60%, 100% { opacity: .3; transform: none; } 30% { opacity: 1; transform: translateY(-4px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .usagi, .island, .ear, .face, .tab, .dot span, .rail { transition: none; }
+  .island, .ear, .face, .tab, .content, .dot span, .rail { transition: none; }
   .thinking .thought i { animation: none; opacity: 1; }
   .content.enter, .content.enter-late { animation: fade .15s both; }
 }

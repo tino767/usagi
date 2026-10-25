@@ -12,6 +12,12 @@
 //
 // The open eyes also blink on their own every few seconds, sometimes twice.
 //
+// Each module gets its own reactions (reactions(owner)), so the core can hand
+// the face to one of them: focus(owner) draws only that owner's motion and
+// drops the beat, and the rest pick up where they are on focus(null). Used
+// while a module has usagi summoned, so nothing else moves his face then.
+// sing() always shows, so the timer's alarm still opens his mouth.
+//
 // The audio is set by the core from system audio: kick bobs the head. Vocal is
 // kept for modules to read but doesn't move the mouth; only sing() does.
 //
@@ -47,7 +53,9 @@ export function createFace() {
   const wraps = [];
   const tongues = [];
   const eyes = [];
-  const s = { bounceUntil: 0, nodUntil: 0, nodDepth: 2.2, shakeAt: 0, shakeMs: 0, tilt: 0, singAt: 0, singMs: 0, thinkUntil: 0, kick: 0, vocal: 0 };
+  const owners = new Map(); // owner → its reaction state
+  let focused = null; // the only owner drawn, or null for all of them
+  const audio = { kick: 0, vocal: 0 };
   let blinkAt = nextBlink(performance.now());
   let twice = false;
   let extraBlinks = 0;
@@ -64,38 +72,61 @@ export function createFace() {
       tongues.push(el.querySelector('.tongue'));
       eyes.push(...el.querySelectorAll('.eye'));
     },
-    bounce(ms = 1500) { s.bounceUntil = Math.max(s.bounceUntil, performance.now() + ms); },
-    nod(ms = 160, depth = 2.2) { s.nodUntil = performance.now() + ms; s.nodDepth = depth; },
-    shake(ms = 800) { s.shakeAt = performance.now(); s.shakeMs = ms; },
-    tilt(deg = 0) { s.tilt = deg; },
-    sing(ms = 600) { s.singAt = performance.now(); s.singMs = ms; },
-    blink(times = 1) { blinkAt = performance.now(); extraBlinks = times - 1; },
-    think(ms = 1500) { s.thinkUntil = performance.now() + ms; },
-    setAudio(kick, vocal) { s.kick = kick; s.vocal = vocal; },
-    get kick() { return s.kick; },
-    get vocal() { return s.vocal; },
+    /** The reactions one owner (a module id) asks for; see the list above. */
+    reactions(owner) {
+      const s = { bounceUntil: 0, nodUntil: 0, nodDepth: 2.2, shakeAt: 0, shakeMs: 0, tilt: 0, singAt: 0, singMs: 0, thinkUntil: 0 };
+      owners.set(owner, s);
+      return {
+        bounce(ms = 1500) { s.bounceUntil = Math.max(s.bounceUntil, performance.now() + ms); },
+        nod(ms = 160, depth = 2.2) { s.nodUntil = performance.now() + ms; s.nodDepth = depth; },
+        shake(ms = 800) { s.shakeAt = performance.now(); s.shakeMs = ms; },
+        tilt(deg = 0) { s.tilt = deg; },
+        sing(ms = 600) { s.singAt = performance.now(); s.singMs = ms; },
+        blink(times = 1) {
+          if (focused !== null && focused !== owner) return;
+          blinkAt = performance.now();
+          extraBlinks = times - 1;
+        },
+        think(ms = 1500) { s.thinkUntil = performance.now() + ms; },
+      };
+    },
+    /** Draw only this owner's reactions, without the beat; null draws everyone's again. */
+    focus(owner) { focused = owner ?? null; },
+    setAudio(kick, vocal) { audio.kick = kick; audio.vocal = vocal; },
+    get kick() { return audio.kick; },
+    get vocal() { return audio.vocal; },
 
     frame(now) {
-      let y = -s.kick * 3.2;
-      if (now < s.nodUntil) y += s.nodDepth;
-      if (now < s.bounceUntil) y -= Math.abs(Math.sin(now / 110)) * 5;
-      // Shake: three side-to-side swings that die down.
-      const k = (now - s.shakeAt) / s.shakeMs;
-      const x = k >= 0 && k < 1 ? Math.sin(k * Math.PI * 6) * 7 * (1 - k) : 0;
-      const scale = 1 + s.kick * 0.06;
-      const t = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${scale.toFixed(3)}) rotate(${s.tilt}deg)`;
+      const kick = focused === null ? audio.kick : 0;
+      let x = 0;
+      let y = -kick * 3.2;
+      let tilt = 0;
+      let thinking = false;
+      let v = 0; // how far the mouth is open, 0..1
+      for (const [owner, s] of owners) {
+        // Mouth: pops open from under the ㅅ on sing() and eases shut, focused or not.
+        const p = (now - s.singAt) / s.singMs;
+        if (p >= 0 && p < 1) v = Math.max(v, (1 - p) ** 2);
+        if (focused !== null && owner !== focused) continue;
+        if (now < s.nodUntil) y += s.nodDepth;
+        if (now < s.bounceUntil) y -= Math.abs(Math.sin(now / 110)) * 5;
+        // Shake: three side-to-side swings that die down.
+        const k = (now - s.shakeAt) / s.shakeMs;
+        if (k >= 0 && k < 1) x += Math.sin(k * Math.PI * 6) * 7 * (1 - k);
+        tilt += s.tilt;
+        if (now < s.thinkUntil) thinking = true;
+      }
+      const scale = 1 + kick * 0.06;
+      const t = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${scale.toFixed(3)}) rotate(${tilt}deg)`;
       if (t !== lastTransform) {
         lastTransform = t;
         for (const el of wraps) el.style.transform = t;
       }
-      const thinking = now < s.thinkUntil;
       if (thinking !== lastThink) {
         lastThink = thinking;
         for (const el of wraps) el.classList.toggle('thinking', thinking);
       }
-      // Mouth: hidden when quiet, pops open from under the ㅅ on sing() and eases shut.
-      const p = (now - s.singAt) / s.singMs;
-      const v = p >= 0 && p < 1 ? (1 - p) ** 2 : 0;
+      // Mouth: hidden when quiet.
       const opacity = Math.min(1, v * 3).toFixed(2);
       const open = `scaleY(${(0.35 + 0.65 * v).toFixed(2)})`;
       if (opacity + open !== lastMouth) {

@@ -82,6 +82,7 @@ export function createRotation({ island, store, catalog, makeCtx }) {
       }
     }
     applySize();
+    island.pinFace(!!catalog.get(id)?.keepFace);
     renderRail(list);
   }
 

@@ -9,6 +9,8 @@
 // and his ears hidden above the screen edge. A module can summon him
 // (setSummon): while it's showing he slides down into full view, and clicking
 // him goes to the module instead of closing. He tucks back up when it's gone.
+// With face auto-hide on (setFaceHide), the tab also slides up off screen while
+// the island sits open and idle, and the island gets TUCK px shorter.
 
 import { h, svg } from './dom.js';
 
@@ -32,6 +34,14 @@ const HIT_PAD = 6;
 const BASE_SCALE = 0.8;
 // Ear size, capped where the island's bottom corner begins so the two curves meet flush.
 const EAR = 22;
+// Face auto-hide ("tuck"): while open and idle, the face tab slides up off
+// screen and the island loses this much height. Hovering the top strip over
+// his spot brings him back.
+const TUCK = 40;
+const TAB_W = 168;
+// Reveal zone around the face's spot, in design px (before scale).
+const REVEAL_PAD_X = 60;
+const REVEAL_H = { shown: 56, tucked: 24 };
 
 // Each ear reaches one unit under the island so no hairline seam shows at fractional pixels.
 const EAR_L = '<svg class="ear ear-l" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 0H17V16H16A16 16 0 0 0 0 0Z"/></svg>';
@@ -59,6 +69,13 @@ export function createIsland({ root, face, bridge }) {
   let interactive = false;
   let scale = BASE_SCALE;
   const modeListeners = new Set();
+  // face auto-hide
+  let faceMode = 'always';
+  let faceDelay = 5000;
+  let facePinned = false; // the current module keeps the face up (Settings)
+  let tucked = false;
+  let atTop = false;
+  let lastTop = 0;
   // background
   let background = 'solid';
   let dotsPulse = true;
@@ -120,12 +137,30 @@ export function createIsland({ root, face, bridge }) {
     const prev = mode;
     mode = next;
     el.dataset.mode = next;
+    lastTop = performance.now();
+    setTucked(false);
     applySize();
     applySummon(next === 'open' ? SUMMON_DELAY : 0);
     if (prev === 'open' && document.activeElement && island.contains(document.activeElement)) {
       document.activeElement.blur();
     }
     modeListeners.forEach((fn) => fn(next, prev));
+  }
+
+  function setTucked(value) {
+    if (tucked === value) return;
+    tucked = value;
+    island.classList.toggle('tucked', value);
+  }
+
+  function updateTuck(now) {
+    // Not eligible to hide: keep the face up and restart the idle clock.
+    if (mode !== 'open' || faceMode !== 'idle' || facePinned || summon || atTop) {
+      lastTop = now;
+      setTucked(false);
+      return;
+    }
+    if (now - lastTop > faceDelay) setTucked(true);
   }
 
   function hitTest(x, y) {
@@ -144,6 +179,9 @@ export function createIsland({ root, face, bridge }) {
     const cx = window.innerWidth / 2;
     near = Math.abs(x - cx) <= (zone.w * scale) / 2 && y >= -8 && y <= zone.h * scale;
     if (mode === 'inactive' && near) setMode('welcome');
+    const revealH = tucked ? REVEAL_H.tucked : REVEAL_H.shown;
+    atTop = mode === 'open' && Math.abs(x - cx) <= (TAB_W / 2 + REVEAL_PAD_X) * scale && y >= -8 && y <= revealH * scale;
+    if (atTop) { lastTop = performance.now(); setTucked(false); }
     settle();
     const hit = hitTest(x, y);
     if (hit !== interactive) {
@@ -166,6 +204,8 @@ export function createIsland({ root, face, bridge }) {
     railRight,
     frost,
     get mode() { return mode; },
+    /** Whether usagi is out in full (open, on a summoning module). */
+    get summoned() { return mode === 'open' && !!summon; },
     setMode,
     toggle() { setMode(mode === 'open' ? 'inactive' : 'open'); },
     onMode(fn) { modeListeners.add(fn); return () => modeListeners.delete(fn); },
@@ -198,7 +238,21 @@ export function createIsland({ root, face, bridge }) {
     // Peek out even though the cursor is away (timer done, notification...).
     attention(ms = 3000) {
       attentionUntil = performance.now() + ms;
+      lastTop = performance.now();
+      setTucked(false);
       if (mode === 'inactive') setMode('welcome');
+    },
+    /** 'always' keeps the face up while open; 'idle' slides it away after delayMs. */
+    setFaceHide(modeName, delayMs) {
+      faceMode = modeName;
+      faceDelay = delayMs;
+      lastTop = performance.now();
+    },
+    /** The current module wants the face kept up (e.g. Settings). */
+    pinFace(value) {
+      facePinned = !!value;
+      if (facePinned) setTucked(false);
+      lastTop = performance.now();
     },
     /** Open-island background: 'solid' | 'dots' | 'gradient' | 'glass', plus the gradient's bottom color. */
     setBackground(kind, color, pulse) {
@@ -213,11 +267,12 @@ export function createIsland({ root, face, bridge }) {
       void content.offsetWidth; // restart the CSS animation
       content.classList.add(kind === 'open' ? 'enter-late' : 'enter');
     },
-    frame(kick) {
+    frame(kick, now = performance.now()) {
       pill.style.setProperty('--pulse', (1 - kick * 0.36).toFixed(3));
       if (background === 'dots' && dotsPulse && mode === 'open') {
         island.style.setProperty('--dot-a', (0.4 + kick * 0.35).toFixed(3));
       }
+      updateTuck(now);
       settle();
     },
   };

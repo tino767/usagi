@@ -30,6 +30,8 @@ const applyBackground = () => {
   glass.setOn(prefs.get('background') === 'glass' && !prefs.get('glassPerformance'));
 };
 ['background', 'gradient', 'dotsPulse', 'glassPerformance'].forEach((key) => prefs.watch(key, applyBackground));
+const applyFace = () => island.setFaceHide(prefs.get('face'), prefs.get('faceDelay') * 1000);
+['face', 'faceDelay'].forEach((key) => prefs.watch(key, applyFace));
 prefs.watch('hideFullscreen', (v) => bridge.setHideFullscreen?.(v));
 
 // ---- load modules from src/renderer/modules/<id>/index.js ----
@@ -64,15 +66,7 @@ function makeCtx(id) {
     h,
     svg,
     icons,
-    face: {
-      bounce: (ms) => face.bounce(ms),
-      nod: (ms, depth) => face.nod(ms, depth),
-      shake: (ms) => face.shake(ms),
-      tilt: (deg) => face.tilt(deg),
-      sing: (ms) => face.sing(ms),
-      blink: (times) => face.blink(times),
-      think: (ms) => face.think(ms),
-    },
+    face: face.reactions(id),
     island: {
       get mode() { return island.mode; },
       isFront: () => island.mode === 'open' && rotation.current() === id,
@@ -102,8 +96,10 @@ const audio = createAudio(bridge);
 function frame(now) {
   const { kick, vocal } = audio.read(now, mediaPlaying);
   face.setAudio(kick, vocal);
+  // While a module has usagi out in full, his face is its alone.
+  face.focus(island.summoned ? rotation.current() : null);
   face.frame(now);
-  island.frame(kick);
+  island.frame(kick, now);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
