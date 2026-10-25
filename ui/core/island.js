@@ -160,7 +160,10 @@ export function createIsland({ root, face, bridge }) {
       setTucked(false);
       return;
     }
-    if (now - lastTop > faceDelay) setTucked(true);
+    // The idle clock starts once the cursor leaves the island (and its rails);
+    // hovering it doesn't bring a hidden face back, only the top strip does.
+    if (interactive) lastTop = now;
+    else if (now - lastTop > faceDelay) setTucked(true);
   }
 
   function hitTest(x, y) {
