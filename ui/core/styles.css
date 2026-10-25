@@ -63,12 +63,43 @@ button svg { pointer-events: none; }
   height: calc(var(--h, 30px) - var(--tuck));
   background: var(--ink);
   border-radius: 0 0 var(--r, 15px) var(--r, 15px);
-  transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease;
+  transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease, box-shadow .5s ease;
   /* face auto-hide: the open face tab slides off screen and the content moves
      up into its place, and the rails go with it */
   --tuck: 0px;
 }
 .island.tucked { --tuck: 48px; }
+/* drop shadow (Settings › Appearance): light from above, so it falls below the
+   island and stays off its sides, where the island melts into the screen edge.
+   Each layer reaches further down and blurs wider, and its negative spread pulls
+   it in from the sides by about as much as the blur pushes it out, so the sides
+   stay clean while the bottom gets a long soft throw over a tight contact line.
+   Scaled per mode: a spread over half the island's height erases that layer.
+   Same layer count in every mode so it animates with the island */
+.has-shadow[data-mode="open"] .island {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, .25),
+    0 6px 12px -6px rgba(0, 0, 0, .35),
+    0 20px 36px -18px rgba(0, 0, 0, .4),
+    0 44px 70px -34px rgba(0, 0, 0, .4),
+    0 72px 110px -50px rgba(0, 0, 0, .3);
+}
+.has-shadow[data-mode="welcome"] .island {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, .25),
+    0 3px 5px -2px rgba(0, 0, 0, .35),
+    0 8px 14px -7px rgba(0, 0, 0, .4),
+    0 18px 28px -14px rgba(0, 0, 0, .4),
+    0 29px 44px -20px rgba(0, 0, 0, .3);
+}
+.has-shadow[data-mode="inactive"] .island {
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, .25),
+    0 2px 3px -1px rgba(0, 0, 0, .35),
+    0 5px 9px -4px rgba(0, 0, 0, .4),
+    0 11px 18px -8px rgba(0, 0, 0, .4),
+    0 18px 28px -12px rgba(0, 0, 0, .3);
+}
 
 /* open-island backgrounds (Settings › Appearance) */
 /* an ink veil over the dots fades them in from the top; it never fully clears,

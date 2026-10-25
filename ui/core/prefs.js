@@ -7,6 +7,7 @@ export const DEFAULTS = {
   gradient: '#3a1f6b',     // bottom color of the gradient background
   dotsPulse: true,         // dot matrix brightens on the kick
   glassPerformance: false, // glass without the blur or screen capture, just see-through
+  shadow: false,           // drop shadow under the island
   face: 'always',          // 'always' (face stays up) | 'idle' (slides away when idle)
   faceDelay: 5,            // seconds before the face slides away
   hideFullscreen: true,    // hide over fullscreen apps (Windows)

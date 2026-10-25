@@ -270,6 +270,8 @@ export function createIsland({ root, face, bridge }) {
       if (color) island.style.setProperty('--grad', color);
       if (kind !== 'dots' || !dotsPulse) island.style.removeProperty('--dot-a');
     },
+    /** A drop shadow under the island and its ears, in every mode. */
+    setShadow(on) { el.classList.toggle('has-shadow', !!on); },
     animateContent(kind) {
       content.classList.remove('enter', 'enter-late');
       void content.offsetWidth; // restart the CSS animation

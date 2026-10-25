@@ -265,9 +265,11 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         }
 
         return h('div', { class: 'set-page' }, header(titleEl('Appearance')),
-          scroll(['Reset appearance', ['scale', 'background', 'gradient', 'dotsPulse', 'glassPerformance']],
+          scroll(['Reset appearance', ['scale', 'shadow', 'background', 'gradient', 'dotsPulse', 'glassPerformance']],
             group(
-              row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v)))),
+              row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v))),
+              row('Drop shadow', toggle('Drop shadow', prefs.get('shadow'), (v) => { prefs.set('shadow', v); render(); }),
+                { sub: 'Lifts the island off light screens' })),
             h('div', { class: 'set-block' }, eyebrow('Background'), bgTiles),
             options));
       }
