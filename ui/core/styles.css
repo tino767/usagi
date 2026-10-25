@@ -12,9 +12,9 @@
   --muted: #a6a6a6;        /* secondary text on ink (8.4:1) */
   --tongue: #E0606A;
   --earring: #aba2a2;
-  --rail-fg: #000000;      /* side rails sit on the wallpaper */
-  --rail-dim: #9c9c9c;
-  --rail-track: #b9b9b9;
+  --rail-fg: #ffffff;      /* rails, in the island's top band */
+  --rail-dim: rgba(255, 255, 255, .45);
+  --rail-track: rgba(255, 255, 255, .3);
   /* bottom corners of anything sitting on the content area's bottom edge:
      open island r64 (island.js) minus the 22px inset. Concentric only while the
      side and bottom insets match, so keep .content's left/right/bottom equal */
@@ -23,13 +23,6 @@
   --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
-/* set per rail by core/contrast.js */
-[data-rail="light"] {
-  --rail-fg: #ffffff;
-  --rail-dim: rgba(255, 255, 255, .45);
-  --rail-track: rgba(255, 255, 255, .3);
-}
-
 html, body {
   margin: 0;
   height: 100%;
@@ -72,7 +65,7 @@ button svg { pointer-events: none; }
   border-radius: 0 0 var(--r, 15px) var(--r, 15px);
   transition: width .5s var(--spring), height .5s var(--spring), border-radius .5s ease;
   /* face auto-hide: the open face tab slides off screen and the content moves
-     up into its place; the rails stay put, just under the ears */
+     up into its place, and the rails go with it */
   --tuck: 0px;
 }
 .island.tucked { --tuck: 40px; }
@@ -207,27 +200,39 @@ button svg { pointer-events: none; }
 .content.enter { animation: enter .3s var(--spring) both; }
 .content.enter-late { animation: enter .32s var(--spring) .18s both; }
 
-/* ---------- side rails ---------- */
-/* just under the open island's 26px ears */
-.rail { position: absolute; top: 30px; width: 24px; flex-direction: column; align-items: center; color: var(--rail-fg); transition: color .2s; }
-[data-mode="open"] .rail { display: flex; animation: fade .3s .2s both; }
-.rail-left { left: -29px; }
+/* ---------- rails ---------- */
+/* the open island's shoulders, either side of the face tab: each rail is
+   centered in its shoulder (island side to tab, 172 wide) and on the tab (y 24).
+   left = the module's rail, right = module icon + position dots. They go with
+   the face when it auto-hides, sliding up off screen, so a hidden face leaves
+   only the module's content */
+.rail {
+  position: absolute; top: 12px; width: 172px; height: 24px;
+  align-items: center; justify-content: center; gap: 5px; color: var(--rail-fg);
+  transition: transform .6s var(--spring), opacity .3s ease;
+}
+[data-mode="open"] .rail { display: flex; animation: fade .3s .2s backwards; }
+.rail-left { left: 0; }
 .rail-left:empty { display: none !important; }
-.rail-right { right: -29px; }
-.rail-right .rail-icon { margin-bottom: 3px; }
-.rail-icon { width: 20px; height: 20px; margin-bottom: 5px; }
+.rail-right { right: 0; gap: 0; }
+.rail-right .rail-icon { margin-right: 2.5px; } /* + the first dot's 2.5px = the left rail's gap */
+.tucked .rail { transform: translateY(-40px); opacity: 0; pointer-events: none; }
+.rail-icon { display: block; width: 20px; height: 20px; flex-shrink: 0; }
+.rail-icon svg { display: block; width: 100%; height: 100%; }
 
-.dot { width: 24px; padding: 2.5px 0; display: flex; align-items: center; justify-content: center; }
-.dot span { width: 8px; height: 8px; border-radius: 4px; background: var(--rail-dim); transition: height .3s var(--spring), background .2s; }
-.dot.on span { height: 24px; background: var(--rail-fg); }
-.dot:focus-visible { outline-color: var(--rail-fg); }
+.dot { height: 24px; padding: 0 2.5px; display: flex; align-items: center; justify-content: center; }
+.dot span { width: 8px; height: 8px; border-radius: 4px; background: var(--rail-dim); transition: width .3s var(--spring), background .2s; }
+.dot:hover span { background: var(--rail-fg); }
+.dot.on span { width: 24px; background: var(--rail-fg); }
+.dot:focus-visible { outline-color: var(--rail-fg); border-radius: 6px; }
 
-/* vertical slider any module can use in its rail */
-.vslider { position: relative; width: 24px; height: 62px; border-radius: 6px; }
-.vslider::before { content: ''; position: absolute; left: 8px; top: 0; width: 8px; height: 100%; border-radius: 4px; background: var(--rail-track); transition: background .2s; }
-.vslider-fill { position: absolute; left: 8px; bottom: 0; width: 8px; height: var(--value, 50%); border-radius: 4px; background: var(--rail-fg); transition: background .2s; }
-.vslider input { position: absolute; inset: 0; width: 24px; height: 62px; margin: 0; opacity: 0; cursor: ns-resize; writing-mode: vertical-lr; direction: rtl; }
-.vslider:focus-within { outline: 2px solid var(--rail-fg); outline-offset: 3px; }
+/* horizontal slider any module can use in its rail: an 8px capsule, white
+   filling a dim track left to right */
+.hslider { position: relative; width: 62px; height: 24px; flex-shrink: 0; }
+.hslider::before { content: ''; position: absolute; left: 0; right: 0; top: 8px; height: 8px; border-radius: 4px; background: var(--rail-track); }
+.hslider-fill { position: absolute; left: 0; top: 8px; width: max(8px, var(--value, 50%)); height: 8px; border-radius: 4px; background: var(--rail-fg); }
+.hslider input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+.hslider:focus-within { outline: 2px solid var(--rail-fg); outline-offset: 2px; border-radius: 6px; }
 
 /* ---------- shared module parts ---------- */
 .btn-round {

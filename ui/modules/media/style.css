@@ -35,4 +35,4 @@
 .m-controls .btn-round { width: 48px; height: 48px; }
 .m-controls svg { width: 24px; height: 24px; }
 .m-controls button:disabled { opacity: .35; cursor: default; }
-.m-vol { display: flex; flex-direction: column; align-items: center; }
+.m-vol { display: flex; align-items: center; gap: 5px; }

@@ -5,7 +5,6 @@ import { h, svg } from './dom.js';
 import { icons } from './icons.js';
 import { createFace } from './face.js';
 import { createIsland } from './island.js';
-import { createContrast } from './contrast.js';
 import { createGlass } from './glass.js';
 import { createRotation, SYSTEM_ID } from './rotation.js';
 import { createSettings } from './settings.js';
@@ -18,13 +17,11 @@ const bridge = createBridge();
 const store = createStore('usagi');
 const face = createFace();
 const island = createIsland({ root: document.getElementById('stage'), face, bridge });
-const contrast = createContrast({ island, bridge });
 const glass = createGlass({ island, bridge });
 const prefs = createPrefs(store);
 
 // ---- preferences → the core (changed on the Settings page) ----
 prefs.watch('scale', (v) => island.setScale(v));
-prefs.watch('rail', (v) => contrast.setMode(v));
 const applyBackground = () => {
   island.setBackground(prefs.get('background'), prefs.get('gradient'), prefs.get('dotsPulse'));
   glass.setOn(prefs.get('background') === 'glass' && !prefs.get('glassPerformance'));

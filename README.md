@@ -44,7 +44,6 @@ ui/                        everything you see â€” no build step
     prefs.js               user preferences and their defaults
     bridge.js              talks to the Rust backend (mock-bridge.js in preview)
     audio.js               kick + vocal levels from the backend, fake fallback
-    contrast.js            black or white side rails, depending on what's behind them
     store.js               per-module persistent storage
     dom.js                 tiny DOM helpers (h, svg)
     app.js                 boot
@@ -62,7 +61,7 @@ scripts/
 ```
 
 **Click-through.** The window is transparent and ignores the mouse. The backend
-sends the cursor position every 50 ms; when it's over the island or a side rail,
+sends the cursor position every 50 ms; when it's over the island,
 the UI makes the window clickable, then releases it when the cursor leaves.
 
 **Staying on top.** On Windows usagi re-claims the topmost spot every second (other

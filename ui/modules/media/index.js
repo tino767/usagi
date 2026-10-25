@@ -29,11 +29,11 @@ export default {
       h('div', { class: 'm-controls' }, prevBtn, playBtn, nextBtn));
 
     // ---- left rail: volume ----
-    const fill = h('div', { class: 'vslider-fill' });
+    const fill = h('div', { class: 'hslider-fill' });
     const input = h('input', { type: 'range', min: '0', max: '100', value: '50', 'aria-label': 'Volume' });
     const rail = h('div', { class: 'm-vol' },
       h('span', { class: 'rail-icon', html: icons.speaker }),
-      h('div', { class: 'vslider' }, fill, input));
+      h('div', { class: 'hslider' }, fill, input));
 
     let sendTimer = 0;
     function setVolumeUI(pct) {

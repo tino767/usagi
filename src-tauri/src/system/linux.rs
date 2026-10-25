@@ -182,11 +182,6 @@ pub fn set_volume(v: f32) -> Result<(), String> {
         .ok_or_else(|| "no wpctl or pactl".into())
 }
 
-// TODO: XGetImage on X11; Wayland has no way to read other windows.
-pub fn backdrop_luma(_rects: &[Rect]) -> Result<Vec<f32>, String> {
-    Err("unsupported".into())
-}
-
 /// Live copies of the screen under a rect, for the glass background.
 pub struct Backdrop;
 

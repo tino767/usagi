@@ -35,7 +35,6 @@ function createTauriBridge() {
     onCursor: (fn) => on('cursor', fn),
     onToggle: (fn) => on('toggle', fn),
     onAudio: (fn) => on('audio', fn),
-    backdrop: (rects) => invoke('backdrop_luma', { rects }),
     glass: {
       // onFrame gets an ArrayBuffer: [w u16, h u16] + BGRA pixels, whenever the screen behind changes
       start: (rect, w, h, onFrame) => {

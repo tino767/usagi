@@ -35,13 +35,12 @@ const HIT_PAD = 6;
 const BASE_SCALE = 0.8;
 // Ear size, capped where the island's bottom corner begins so the two curves meet flush.
 const EAR = 22;
-// Face auto-hide ("tuck"): while open and idle, the face tab slides up off
-// screen and the island loses this much height. Hovering the top strip over
-// his spot brings him back.
+// Face auto-hide ("tuck"): while open and idle, the face tab and the rails
+// beside it slide up off screen and the island loses this much height.
+// Hovering the top strip across the island brings them back.
 const TUCK = 40;
-const TAB_W = 168;
-// Reveal zone around the face's spot, in design px (before scale).
-const REVEAL_PAD_X = 60;
+// Reveal zone: the open island's width, so the rails come back too.
+const REVEAL_W = SIZES.open.w;
 const REVEAL_H = { shown: 56, tucked: 24 };
 
 // Each ear reaches one unit under the island so no hairline seam shows at fractional pixels.
@@ -161,7 +160,7 @@ export function createIsland({ root, face, bridge }) {
       setTucked(false);
       return;
     }
-    // The idle clock starts once the cursor leaves the island (and its rails);
+    // The idle clock starts once the cursor leaves the island;
     // hovering it doesn't bring a hidden face back, only the top strip does.
     if (interactive) lastTop = now;
     else if (now - lastTop > faceDelay) setTucked(true);
@@ -169,11 +168,9 @@ export function createIsland({ root, face, bridge }) {
 
   function hitTest(x, y) {
     if (mode === 'inactive') return false;
-    return [island, railLeft, railRight].some((node) => {
-      const r = node.getBoundingClientRect();
-      if (!r.width || !r.height) return false;
-      return x >= r.left - HIT_PAD && x <= r.right + HIT_PAD && y >= r.top - HIT_PAD && y <= r.bottom + HIT_PAD;
-    });
+    const r = island.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    return x >= r.left - HIT_PAD && x <= r.right + HIT_PAD && y >= r.top - HIT_PAD && y <= r.bottom + HIT_PAD;
   }
 
   // Cursor position comes from the main process (window-relative), so this
@@ -184,7 +181,7 @@ export function createIsland({ root, face, bridge }) {
     near = Math.abs(x - cx) <= (zone.w * scale) / 2 && y >= -8 && y <= zone.h * scale;
     if (mode === 'inactive' && near) setMode('welcome');
     const revealH = tucked ? REVEAL_H.tucked : REVEAL_H.shown;
-    atTop = mode === 'open' && Math.abs(x - cx) <= (TAB_W / 2 + REVEAL_PAD_X) * scale && y >= -8 && y <= revealH * scale;
+    atTop = mode === 'open' && Math.abs(x - cx) <= (REVEAL_W / 2) * scale && y >= -8 && y <= revealH * scale;
     if (atTop) { lastTop = performance.now(); setTucked(false); }
     settle();
     const hit = hitTest(x, y);

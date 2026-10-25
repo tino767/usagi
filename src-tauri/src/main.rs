@@ -113,16 +113,6 @@ impl CssRect {
     }
 }
 
-/// Mean luminance of the screen under each rect, so the side rails can pick
-/// black or white against whatever is behind them.
-#[tauri::command]
-async fn backdrop_luma(window: WebviewWindow, rects: Vec<CssRect>) -> Result<Vec<f32>, String> {
-    let rects = rects.iter().map(|r| r.to_screen(&window)).collect::<Result<Vec<_>, _>>()?;
-    tauri::async_runtime::spawn_blocking(move || system::backdrop_luma(&rects))
-        .await
-        .map_err(|e| e.to_string())?
-}
-
 /// What the glass background is showing: the screen rect behind the island,
 /// the size to shrink it to, and where to send frames. `target` None = stop.
 #[derive(Default)]
@@ -324,7 +314,6 @@ fn main() {
             media_command,
             volume_get,
             volume_set,
-            backdrop_luma,
             glass_start,
             glass_move,
             glass_stop,

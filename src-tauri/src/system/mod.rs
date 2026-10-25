@@ -3,7 +3,6 @@
 //   thumbnail()        -> artwork for the current track as a data: or https: URL
 //   media_command(cmd) -> "toggle" | "next" | "prev"
 //   volume() / set_volume(v)   master output volume, 0.0..=1.0
-//   backdrop_luma(rects) -> mean relative luminance (0..1) of each screen rect
 //   Backdrop::open(at) / next(rect, w, h, force) -> live copies of the screen
 //     under rect, shrunk to w×h BGRA, as it changes (glass background)
 
@@ -59,7 +58,6 @@ mod fallback {
     pub fn media_command(_cmd: &str) -> Result<bool, String> { Ok(false) }
     pub fn volume() -> Result<f32, String> { Err("unsupported".into()) }
     pub fn set_volume(_v: f32) -> Result<(), String> { Err("unsupported".into()) }
-    pub fn backdrop_luma(_rects: &[super::Rect]) -> Result<Vec<f32>, String> { Err("unsupported".into()) }
     pub struct Backdrop;
     impl Backdrop {
         pub fn open(_at: super::Rect) -> Result<Self, String> { Err("unsupported".into()) }

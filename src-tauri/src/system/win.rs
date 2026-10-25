@@ -161,33 +161,6 @@ fn with_screen<T>(f: impl FnOnce(HDC, HDC) -> Result<T, String>) -> Result<T, St
     }
 }
 
-/// Copies each rect off the screen and averages its relative luminance.
-pub fn backdrop_luma(rects: &[Rect]) -> Result<Vec<f32>, String> {
-    let to_linear: Vec<f32> = (0..256)
-        .map(|i| {
-            let c = i as f32 / 255.0;
-            if c <= 0.04045 { c / 12.92 } else { ((c + 0.055) / 1.055).powf(2.4) }
-        })
-        .collect();
-    with_screen(|screen, mem| {
-        rects
-            .iter()
-            .map(|r| {
-                let r = Rect { w: r.w.max(1), h: r.h.max(1), ..*r };
-                let px = unsafe { grab(screen, mem, &r, r.w, r.h) }?;
-                // BGRA
-                let sum: f32 = px
-                    .chunks_exact(4)
-                    .map(|p| {
-                        0.0722 * to_linear[p[0] as usize] + 0.7152 * to_linear[p[1] as usize] + 0.2126 * to_linear[p[2] as usize]
-                    })
-                    .sum();
-                Ok(sum / (r.w * r.h) as f32)
-            })
-            .collect()
-    })
-}
-
 /// How long `Backdrop::next` waits for the screen to change.
 const FRAME_WAIT_MS: u32 = 16;
 /// Pace of the GDI fallback, which can't tell when the screen changed.

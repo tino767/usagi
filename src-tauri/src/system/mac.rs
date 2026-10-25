@@ -93,11 +93,6 @@ pub fn set_volume(v: f32) -> Result<(), String> {
     osascript(&format!("set volume output volume {}", (v * 100.0).round() as i32)).map(|_| ())
 }
 
-// TODO: reading screen pixels needs Screen Recording permission (ScreenCaptureKit).
-pub fn backdrop_luma(_rects: &[Rect]) -> Result<Vec<f32>, String> {
-    Err("unsupported".into())
-}
-
 /// Live copies of the screen under a rect, for the glass background.
 pub struct Backdrop;
 

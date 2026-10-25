@@ -23,7 +23,6 @@ const PAGE_MAX_H = 460;
 const CONTENT_PAD = 62 + 22;
 const CONTENT_W = 512 - 22 - 22;
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
-const RAILS = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient'], ['glass', 'Glass']];
 const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];
 const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
@@ -266,10 +265,9 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         }
 
         return h('div', { class: 'set-page' }, header(titleEl('Appearance')),
-          scroll(['Reset appearance', ['scale', 'rail', 'background', 'gradient', 'dotsPulse', 'glassPerformance']],
+          scroll(['Reset appearance', ['scale', 'background', 'gradient', 'dotsPulse', 'glassPerformance']],
             group(
-              row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v))),
-              row('Side rails', seg('Side rails', RAILS, prefs.get('rail'), (v) => prefs.set('rail', v)))),
+              row('Size', seg('Size', SCALES, prefs.get('scale'), (v) => prefs.set('scale', v)))),
             h('div', { class: 'set-block' }, eyebrow('Background'), bgTiles),
             options));
       }
