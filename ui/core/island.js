@@ -20,7 +20,7 @@ const SIZES = {
   welcome: { w: 168, h: 48, r: 24 },
   // Every module shares this size; only Settings sets its own height (rotation.js).
   // r: keep --r-fit in styles.css at r − 22, and recheck the timer / media corner notes.
-  open: { w: 512, h: 180, r: 64, ear: 26 },
+  open: { w: 512, h: 188, r: 64, ear: 26 },
 };
 // How close the cursor must be (centered on the island) to wake usagi up.
 // Welcome's zone is a little larger so it doesn't flicker at the edge.
@@ -38,7 +38,7 @@ const EAR = 22;
 // Face auto-hide ("tuck"): while open and idle, the face tab and the rails
 // beside it slide up off screen and the island loses this much height.
 // Hovering the top strip across the island brings them back.
-const TUCK = 40;
+const TUCK = 48;
 // Reveal zone: the open island's width, so the rails come back too.
 const REVEAL_W = SIZES.open.w;
 const REVEAL_H = { shown: 56, tucked: 24 };
@@ -110,6 +110,13 @@ export function createIsland({ root, face, bridge }) {
   const island = h('div', { class: 'island' }, svg(EAR_L), svg(EAR_R), h('div', { class: 'frost' }, frost), pill, status, peek, tab, content, railLeft, railRight);
   const el = h('div', { class: 'usagi', 'data-mode': mode }, island);
   root.append(el);
+
+  // --dpr lets CSS snap small shapes to whole screen pixels (the rail dots);
+  // it changes when the window moves to a monitor with another OS scale
+  (function watchDpr() {
+    el.style.setProperty('--dpr', String(devicePixelRatio));
+    matchMedia(`(resolution: ${devicePixelRatio}dppx)`).addEventListener('change', watchDpr, { once: true });
+  })();
 
   island.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && mode === 'open') setMode('welcome');

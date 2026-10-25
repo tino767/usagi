@@ -1,6 +1,6 @@
 // The built-in Settings page. Always last in the rotation; can't be removed.
 //
-// Home is a row of category tiles at the modules' size (512×180). Picking one
+// Home is a row of category tiles at the modules' size (512×188). Picking one
 // grows the island down just enough to fit that page (up to 512×460); Back,
 // scrolling away or closing shrinks it again. The face stays up here even
 // when auto-hide is on.
@@ -18,9 +18,9 @@ import { DEFAULTS } from './prefs.js';
 // PAGE_MIN_H (that same size, island.js) and PAGE_MAX_H; anything taller
 // scrolls. CONTENT_PAD is .content's top + bottom inset; CONTENT_W its width
 // once open, so a mid-animation island measures the same.
-const PAGE_MIN_H = 180;
+const PAGE_MIN_H = 188;
 const PAGE_MAX_H = 460;
-const CONTENT_PAD = 62 + 22;
+const CONTENT_PAD = 70 + 22;
 const CONTENT_W = 512 - 22 - 22;
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient'], ['glass', 'Glass']];

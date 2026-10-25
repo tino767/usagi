@@ -68,7 +68,7 @@ button svg { pointer-events: none; }
      up into its place, and the rails go with it */
   --tuck: 0px;
 }
-.island.tucked { --tuck: 40px; }
+.island.tucked { --tuck: 48px; }
 
 /* open-island backgrounds (Settings › Appearance) */
 /* an ink veil over the dots fades them in from the top; it never fully clears,
@@ -175,7 +175,7 @@ button svg { pointer-events: none; }
    island's bottom, the same inset as every module's content; his ears still
    run up past the screen edge. Above the content so clicks reach him */
 .tucked .tab { transform: translateX(-50%) translateY(-52px); }
-.summoned .tab { z-index: 1; transform: translateX(-50%) translateY(110px); }
+.summoned .tab { z-index: 1; transform: translateX(-50%) translateY(118px); }
 
 .face { display: block; line-height: 0; transition: transform 90ms linear; }
 .face svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -195,7 +195,7 @@ button svg { pointer-events: none; }
 .thought i:nth-child(2) { animation-delay: .15s; }
 .thought i:nth-child(3) { animation-delay: .3s; }
 
-.content { position: absolute; left: 22px; right: 22px; top: calc(62px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
+.content { position: absolute; left: 22px; right: 22px; top: calc(70px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
 [data-mode="open"] .content { display: block; }
 .content.enter { animation: enter .3s var(--spring) both; }
 .content.enter-late { animation: enter .32s var(--spring) .18s both; }
@@ -225,6 +225,15 @@ button svg { pointer-events: none; }
 .dot:hover span { background: var(--rail-fg); }
 .dot.on span { width: 24px; background: var(--rail-fg); }
 .dot:focus-visible { outline-color: var(--rail-fg); border-radius: 6px; }
+/* at zoom .8 an 8px dot is 6.4 screen px, and each edge snaps to a pixel on its
+   own, so some dots land 7 wide by 6 tall: ovals. Round the sizes to whole
+   screen pixels (--px is one of them in design px) so every dot is square */
+@supports (width: round(1px, 1px)) {
+  .usagi { --px: calc(1px / var(--scale, .8) / var(--dpr, 1)); }
+  .dot { padding: 0 round(2.5px, var(--px)); }
+  .dot span { width: round(8px, var(--px)); height: round(8px, var(--px)); border-radius: 99px; }
+  .dot.on span { width: round(24px, var(--px)); }
+}
 
 /* horizontal slider any module can use in its rail: an 8px capsule, white
    filling a dim track left to right */
