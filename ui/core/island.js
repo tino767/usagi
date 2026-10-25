@@ -19,7 +19,8 @@ const SIZES = {
   // Same footprint as the open state's face tab, so opening swaps one for the other in place.
   welcome: { w: 168, h: 48, r: 24 },
   // Every module shares this size; only Settings sets its own height (rotation.js).
-  open: { w: 512, h: 180, r: 80, ear: 26 },
+  // r: keep --r-fit in styles.css at r − 22, and recheck the timer / media corner notes.
+  open: { w: 512, h: 180, r: 64, ear: 26 },
 };
 // How close the cursor must be (centered on the island) to wake usagi up.
 // Welcome's zone is a little larger so it doesn't flicker at the edge.

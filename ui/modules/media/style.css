@@ -1,7 +1,7 @@
 /* one row. The cover sits 12px inside the 96 tall content on the left, top and
    bottom (34px from the island's left and bottom edges); at r20 its corner
-   keeps ~22px from the island's r80 curve, the same gap the content keeps from
-   the straight edges. (A truly concentric corner, 80 − 34, would be a circle.) */
+   keeps ~30px from the island's r64 curve, close to the 34px it keeps from the
+   straight edges. (A truly concentric corner would be 64 − 34 = r30.) */
 .m-root { display: flex; align-items: center; gap: 16px; height: 100%; padding: 0 12px; }
 .m-art {
   width: 72px; height: 72px; flex-shrink: 0;

@@ -1,9 +1,9 @@
 /* readout and controls on top, presets and progress on the bottom edge.
-   20px in from the content's sides and 8px up from its bottom (42px and 30px
+   12px in from the content's sides and 6px up from its bottom (34px and 28px
    from the island's): that puts the bottom chips' r13 ends 22px inside the
-   island's r80 corners, the same gap the content keeps from the straight
+   island's r64 corners, the same gap the content keeps from the straight
    edges; the top row shares the side inset so both rows line up */
-.t-root { display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0 20px 8px; box-sizing: border-box; }
+.t-root { display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0 12px 6px; box-sizing: border-box; }
 .t-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .t-time { font-size: 44px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
 .t-controls { display: flex; align-items: center; gap: 6px; }
