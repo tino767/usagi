@@ -24,6 +24,17 @@ const CONTENT_PAD = 70 + 22;
 const CONTENT_W = 512 - 22 - 22;
 const SCALES = [[0.75, '75%'], [1, '100%'], [1.25, '125%']];
 const BACKGROUNDS = [['solid', 'Solid'], ['dots', 'Dot matrix'], ['gradient', 'Gradient'], ['glass', 'Glass']];
+// Glyphs for the background tiles, drawn like the module icons (24×24, currentColor)
+// so the picker reads as the same kind of tile as the Modules grid.
+const bgIcon = (body) => `<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">${body}</svg>`;
+const BG_ICONS = {
+  solid: bgIcon('<rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="currentColor"/>'),
+  dots: bgIcon(`<g fill="currentColor">${[4.5, 12, 19.5].flatMap((y) => [4.5, 12, 19.5].map((x) => `<circle cx="${x}" cy="${y}" r="2.3"/>`)).join('')}</g>`),
+  gradient: bgIcon('<defs><linearGradient id="set-bg-fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".15" stop-color="currentColor" stop-opacity="0"/><stop offset="1" stop-color="currentColor"/></linearGradient></defs>'
+    + '<rect x="3.6" y="3.6" width="16.8" height="16.8" rx="4.8" fill="url(#set-bg-fade)" stroke="currentColor" stroke-width="2.2"/>'),
+  glass: bgIcon('<rect x="3.6" y="3.6" width="16.8" height="16.8" rx="4.8" fill="none" stroke="currentColor" stroke-width="2.2"/>'
+    + '<path d="M7.6 13.4l5.8-5.8M10.6 16.4l5.8-5.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'),
+};
 const SWATCHES = [['Violet', '#3a1f6b'], ['Blue', '#13306e'], ['Teal', '#0e4a4a'], ['Rose', '#5c1733'], ['Ember', '#5e2a0b']];
 const FACE = [['always', 'Always up'], ['idle', 'Hide when idle']];
 const DELAYS = [3, 5, 10];
@@ -159,7 +170,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
           ['appearance', 'Appearance', icons.appearance, `${bg} · ${Math.round(prefs.get('scale') * 100)}%`],
           ['behavior', 'Behavior', icons.behavior, prefs.get('face') === 'idle' ? `Face hides after ${prefs.get('faceDelay')}s`
             : IS_WINDOWS && prefs.get('hideFullscreen') ? 'Off in fullscreen' : 'Always on top'],
-          ['about', 'About', icons.info, version ? `v${version}` : 'usagi'],
+          ['about', 'About', icons.info, /^\d/.test(version) ? `v${version}` : version || 'usagi'],
         ];
         return h('div', { class: 'set-home' }, ...tiles.map(([id, label, icon, sub]) =>
           h('button', { class: 'set-tile', onclick: () => go(id) },
@@ -228,7 +239,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
           ...BACKGROUNDS.map(([value, label]) => h('button', {
             class: 'set-bg', role: 'radio', 'aria-checked': String(bg === value),
             onclick: () => { prefs.set('background', value); ctx.face.nod(); render(); },
-          }, h('span', { class: `set-bg-preview ${value}` }), label)));
+          }, h('span', { class: 'set-bg-icon', html: BG_ICONS[value] }), label)));
 
         // preset swatches plus a custom color; fix() adjusts picked colors
         const colorRow = (label, key, swatches, fix = (c) => c) => {

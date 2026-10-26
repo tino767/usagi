@@ -104,6 +104,9 @@ export function createIsland({ root, face, bridge }) {
     'aria-label': 'Close usagi',
     onclick: () => (summon && mode === 'open' ? summon.click() : setMode(near ? 'welcome' : 'inactive')),
   }, body);
+  // he blinks when the cursor finds him, so the face reads as the thing to click
+  const own = face.reactions('island');
+  tab.addEventListener('pointerenter', () => own.blink());
   const content = h('div', { class: 'content' });
   const railLeft = h('div', { class: 'rail rail-left' });
   const railRight = h('div', { class: 'rail rail-right' });
@@ -273,9 +276,9 @@ export function createIsland({ root, face, bridge }) {
     /** A drop shadow under the island and its ears, in every mode. */
     setShadow(on) { el.classList.toggle('has-shadow', !!on); },
     animateContent(kind) {
-      content.classList.remove('enter', 'enter-late');
+      content.classList.remove('enter', 'enter-late', 'enter-next', 'enter-prev');
       void content.offsetWidth; // restart the CSS animation
-      content.classList.add(kind === 'open' ? 'enter-late' : 'enter');
+      content.classList.add({ open: 'enter-late', next: 'enter-next', prev: 'enter-prev' }[kind] ?? 'enter');
     },
     frame(kick, now = performance.now()) {
       pill.style.setProperty('--pulse', (1 - kick * 0.36).toFixed(3));

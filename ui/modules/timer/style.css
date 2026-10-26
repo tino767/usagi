@@ -12,7 +12,11 @@
 .t-controls .btn-round { width: 48px; height: 48px; }
 .t-controls .btn-round svg { width: 24px; height: 24px; }
 /* stop square while the alarm rings, in usagi's tongue color */
+/* the readout flashes in it too, on the chime's beat (RING_MS) */
 .t-controls .btn-round.t-ringing { color: var(--tongue); }
+.t-root.t-ringing .t-time { color: var(--tongue); animation: t-flash 1.4s ease-in-out infinite; }
+@keyframes t-flash { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .t-root.t-ringing .t-time { animation: none; } }
 .t-reset svg { width: 20px; height: 20px; }
 .t-bottom { display: flex; align-items: center; gap: 8px; }
 /* slimmer than the shared chip so the two rows keep some air between them */

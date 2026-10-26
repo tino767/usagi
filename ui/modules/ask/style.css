@@ -1,4 +1,8 @@
-/* usagi himself fills the panel (the core's tab, summoned); the content only
-   carries his answer for screen readers */
-.ask-root { height: 100%; }
-.ask-said { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* usagi himself stands in the middle of the panel (the core's tab, summoned,
+   168 wide); the prompt and his answer sit either side of him */
+.ask-root { height: 100%; display: grid; grid-template-columns: 1fr 168px 1fr; align-items: center; }
+.ask-prompt, .ask-said { padding: 0 14px; text-align: center; font-size: 13px; line-height: 1.4; color: var(--muted); text-wrap: balance; }
+.ask-said.answered { font-size: 22px; font-weight: 600; line-height: 1; color: var(--paper); }
+.ask-said.pop { animation: ask-pop .45s var(--spring) both; }
+@keyframes ask-pop { from { opacity: 0; transform: scale(.6) translateX(-12px); } }
+@media (prefers-reduced-motion: reduce) { .ask-said.pop { animation: fade .15s both; } }

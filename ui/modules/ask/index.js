@@ -1,11 +1,13 @@
 // Ask usagi — a magic 8-ball. While this module is showing, usagi steps out of
 // his tab in full view; click him with a question in mind and his face bobs
 // down and up (yes), slides side to side (no) or blinks, puzzled, with a "…"
-// between his ears (maybe).
+// between his ears (maybe). The prompt sits on his left, his answer on his right.
 
 import { icons } from '../../core/icons.js';
 
 const ANSWERS = ['yes', 'no', 'maybe'];
+const WORDS = { yes: 'Yes!', no: 'Nope.', maybe: 'Maybe…' };
+const HINT = '…then click me';
 
 export default {
   id: 'ask',
@@ -21,9 +23,11 @@ export default {
     const timers = new Set();
     const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); };
 
-    // He answers with motion only; this tells screen readers what he said.
-    const said = h('span', { class: 'ask-said', 'aria-live': 'polite' });
-    const el = h('div', { class: 'ask-root' }, said);
+    const said = h('span', { class: 'ask-said', 'aria-live': 'polite' }, HINT);
+    const el = h('div', { class: 'ask-root' },
+      h('span', { class: 'ask-prompt' }, 'Think of a yes or no question'),
+      h('span', { 'aria-hidden': 'true' }), // usagi stands here
+      said);
 
     // Each plays the answer and returns how long it takes.
     const answers = {
@@ -47,13 +51,19 @@ export default {
     function ask() {
       if (busy) return;
       const answer = ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
-      said.textContent = answer[0].toUpperCase() + answer.slice(1);
+      said.textContent = WORDS[answer];
+      said.classList.add('answered');
+      said.classList.remove('pop');
+      void said.offsetWidth; // restart the CSS animation
+      said.classList.add('pop');
       busy = setTimeout(() => { busy = 0; }, answers[answer]());
     }
 
     return {
       el,
       summon: { label: 'Ask usagi', click: ask },
+      // a fresh question each visit
+      show() { said.textContent = HINT; said.classList.remove('answered', 'pop'); },
       destroy() { clearTimeout(busy); timers.forEach(clearTimeout); },
     };
   },

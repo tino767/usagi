@@ -60,10 +60,17 @@ export function createRotation({ island, store, catalog, makeCtx }) {
       d.setAttribute('aria-label', `Show ${catalog.get(list[i])?.name ?? list[i]}`);
       if (on) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
     });
-    railIcon.innerHTML = catalog.get(list[index])?.icon ?? '';
+    const icon = catalog.get(list[index])?.icon ?? '';
+    if (railIcon.innerHTML !== icon) {
+      railIcon.innerHTML = icon;
+      railIcon.classList.remove('pop');
+      void railIcon.offsetWidth; // restart the CSS animation
+      railIcon.classList.add('pop');
+    }
   }
 
-  function render({ animate = true } = {}) {
+  // dir: 1 = moved to the next module, -1 = the previous (sets which side it slides in from)
+  function render({ animate = true, dir = 0 } = {}) {
     const list = ids();
     index = Math.max(0, Math.min(index, list.length - 1));
     const id = list[index];
@@ -78,7 +85,7 @@ export function createRotation({ island, store, catalog, makeCtx }) {
       currentId = id;
       if (open) {
         inst.show?.();
-        if (animate) island.animateContent('swap');
+        if (animate) island.animateContent(dir > 0 ? 'next' : dir < 0 ? 'prev' : 'swap');
       }
     }
     applySize();
@@ -93,8 +100,8 @@ export function createRotation({ island, store, catalog, makeCtx }) {
     island.setOpenSize(inst?.size?.() || null);
   }
 
-  function go(i) { index = i; render(); }
-  function step(dir) { const n = ids().length; go((index + dir + n) % n); }
+  function go(i, dir = Math.sign(i - index)) { index = i; render({ dir }); }
+  function step(dir) { const n = ids().length; go((index + dir + n) % n, dir); }
 
   island.onWheel((e) => {
     if (island.mode !== 'open') return;
