@@ -314,7 +314,8 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
         el: root,
         size: () => (page && pageH ? { h: pageH } : null),
         show() { page = null; render(); },
-        hide() { page = null; pageH = null; query = ''; searching = false; },
+        // Drop the page's height too, or the island reopens at it around home.
+        hide() { page = null; pageH = null; query = ''; searching = false; ctx.island.resize(); },
       };
     },
   };
