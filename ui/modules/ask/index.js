@@ -3,7 +3,7 @@
 // snaps back out in full view with this page showing. Click him with a question
 // in mind and his face bobs down and up (yes), slides side to side (no) or
 // blinks, puzzled, with a "…" between his ears (maybe). The prompt sits on his
-// left, his answer on his right.
+// left, his answer on his right. Push him back up by his face to leave.
 
 import { icons } from '../../core/icons.js';
 

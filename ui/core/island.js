@@ -13,7 +13,9 @@
 // more tension, stretching the island with him once he reaches its bottom. From
 // there on his eyes close to "= ㅅ =", and letting go fires onPull (rotation.js
 // uses it for the secret Ask usagi page); either way he and the island snap
-// back like a rubber band.
+// back like a rubber band. While summoned he can be pushed back up the same way,
+// 1:1, eyes open (no tension): once the content has faded out, letting go
+// fires onPush (rotation.js leaves the page, so he tucks away).
 // With face auto-hide on (setFaceHide), the tab also slides up off screen while
 // the island sits open and idle, and the island gets TUCK px shorter.
 
@@ -101,10 +103,11 @@ export function createIsland({ root, face, bridge }) {
   let summon = null; // { label, click } from the showing module
   let summonTimer = 0;
   // pulling him down
-  let pull = null; // { id, startY, from, rest, y, dragged } while he's held by his face
+  let pull = null; // { id, startY, from, rest, y, dragged, armed } while he's held by his face
   let spring = 0; // the snap-back's animation frame
   let swallowClick = false;
   const pullListeners = new Set();
+  const pushListeners = new Set();
 
   const peekFace = h('span');
   const tabFace = h('span');
@@ -185,11 +188,12 @@ export function createIsland({ root, face, bridge }) {
   // start a transition that would fight it.
   const tabY = () => new DOMMatrix(getComputedStyle(tab).transform).f;
 
-  // y: where he is; rest: where he'd sit (0, or SUMMONED_Y), for the fade
-  function place(y, rest) {
+  // y: where he is; rest: where he'd sit (0, or SUMMONED_Y), for the fade;
+  // up: the content fades as he rises above rest instead of as he drops below it
+  function place(y, rest, up = false) {
     const base = parseFloat(island.style.getPropertyValue('--h')) || SIZES.open.h;
     const stretch = Math.max(0, y + TAB_H + INSET - base);
-    const fade = Math.max(0, y - rest) / PULL_FADE;
+    const fade = Math.max(0, up ? rest - y : y - rest) / PULL_FADE;
     tab.style.transform = at(y);
     island.style.setProperty('--stretch', `${stretch.toFixed(1)}px`);
     content.style.opacity = fade ? Math.max(0, 1 - fade).toFixed(3) : '';
@@ -219,15 +223,23 @@ export function createIsland({ root, face, bridge }) {
     }
     // no further than the island's bottom staying inside the window
     const maxY = Math.max(pull.from, window.innerHeight / scale - 8 - TAB_H - INSET);
-    pull.y = Math.min(pull.from + PULL_K * Math.log1p(Math.max(0, dy) / PULL_K), maxY);
-    // armed once the island has to grow to hold him: letting go now counts
-    island.classList.toggle('pull-armed', place(pull.y, pull.rest) > 0);
+    // summoned, he can also go back up, 1:1, as far as the screen edge
+    const y = dy >= 0 ? pull.from + PULL_K * Math.log1p(dy / PULL_K)
+      : pull.rest ? Math.max(0, pull.from + dy) : pull.from;
+    pull.y = Math.min(y, maxY);
+    // armed (letting go now counts) once the island has to grow to hold him,
+    // or, going up, once the content has faded out. Only the pull squints his
+    // eyes: going up is no strain, so the fade is all that shows it.
+    const up = pull.y < pull.rest;
+    pull.armed = up
+      ? (place(pull.y, pull.rest, true), pull.y <= pull.rest - PULL_FADE)
+      : place(pull.y, pull.rest) > 0;
+    island.classList.toggle('pull-armed', pull.armed && !up);
   }
 
   function letGo(e, released) {
     if (!pull || e.pointerId !== pull.id) return;
-    const { y, dragged } = pull;
-    const armed = island.classList.contains('pull-armed');
+    const { y, rest, dragged, armed } = pull;
     island.classList.remove('pull-armed');
     pull = null;
     if (!island.classList.contains('pulling')) return; // a plain click
@@ -235,7 +247,7 @@ export function createIsland({ root, face, bridge }) {
       swallowClick = true;
       setTimeout(() => { swallowClick = false; });
     }
-    if (released && armed) pullListeners.forEach((fn) => fn());
+    if (released && armed) (y < rest ? pushListeners : pullListeners).forEach((fn) => fn());
     tab.style.removeProperty('transform');
     snap(y, tabY());
   }
@@ -243,6 +255,7 @@ export function createIsland({ root, face, bridge }) {
   // A damped spring from y to `to` (g runs 1 → 0, overshooting); the island
   // follows his chin and the content fades back in as he settles.
   function snap(y, to) {
+    const up = y < to; // coming back down from a push that didn't go far enough
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const decay = SPRING_Z * SPRING_W;
     const wd = SPRING_W * Math.sqrt(1 - SPRING_Z * SPRING_Z);
@@ -258,7 +271,7 @@ export function createIsland({ root, face, bridge }) {
         return;
       }
       const g = env * (Math.cos(wd * t) + (decay / wd) * Math.sin(wd * t));
-      place(to + (y - to) * g, to);
+      place(to + (y - to) * g, to, up);
       spring = requestAnimationFrame(step);
     };
     step(start);
@@ -346,6 +359,8 @@ export function createIsland({ root, face, bridge }) {
     onWheel(fn) { island.addEventListener('wheel', fn, { passive: true }); },
     /** He was pulled down by his face and let go (fires before he snaps back). */
     onPull(fn) { pullListeners.add(fn); return () => pullListeners.delete(fn); },
+    /** He was summoned, pushed back up by his face and let go (fires before he snaps back). */
+    onPush(fn) { pushListeners.add(fn); return () => pushListeners.delete(fn); },
     setOpenSize(size) { openSize = size; applySize(); },
     /** The showing module's { label, click } to bring usagi out in full, or null. */
     setSummon(next) {
@@ -401,9 +416,11 @@ export function createIsland({ root, face, bridge }) {
     /** A drop shadow under the island and its ears, in every mode. */
     setShadow(on) { el.classList.toggle('has-shadow', !!on); },
     animateContent(kind) {
-      content.classList.remove('enter', 'enter-late', 'enter-next', 'enter-prev');
+      content.classList.remove('enter', 'enter-late', 'enter-next', 'enter-prev', 'bump-next', 'bump-prev');
       void content.offsetWidth; // restart the CSS animation
-      content.classList.add({ open: 'enter-late', next: 'enter-next', prev: 'enter-prev' }[kind] ?? 'enter');
+      content.classList.add({
+        open: 'enter-late', next: 'enter-next', prev: 'enter-prev', 'bump-next': 'bump-next', 'bump-prev': 'bump-prev',
+      }[kind] ?? 'enter');
     },
     frame(kick, now = performance.now()) {
       pill.style.setProperty('--pulse', (1 - kick * 0.36).toFixed(3));

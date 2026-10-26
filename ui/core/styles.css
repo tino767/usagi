@@ -248,6 +248,9 @@ button svg { pointer-events: none; }
 /* scrolling to the next module slides it in from the right, the previous from the left */
 .content.enter-next { animation: enter-next .32s var(--spring) both; }
 .content.enter-prev { animation: enter-prev .32s var(--spring) both; }
+/* scrolling past either end: it leans the way it would have gone and springs back */
+.content.bump-next { animation: bump-next .36s ease-out; }
+.content.bump-prev { animation: bump-prev .36s ease-out; }
 
 /* ---------- rails ---------- */
 /* the open island's shoulders, either side of the face tab: each rail is
@@ -451,6 +454,8 @@ button svg { pointer-events: none; }
 @keyframes enter { from { opacity: 0; transform: translateY(8px); } }
 @keyframes enter-next { from { opacity: 0; transform: translateX(16px); } }
 @keyframes enter-prev { from { opacity: 0; transform: translateX(-16px); } }
+@keyframes bump-next { 35% { transform: translateX(-6px); } }
+@keyframes bump-prev { 35% { transform: translateX(6px); } }
 @keyframes pop { from { opacity: 0; transform: scale(.5); } }
 @keyframes think { 0%, 60%, 100% { opacity: .3; transform: none; } 30% { opacity: 1; transform: translateY(-4px); } }
 
@@ -458,6 +463,7 @@ button svg { pointer-events: none; }
   .island, .ear, .face, .tab, .content, .dot span, .rail { transition: none; }
   .thinking .thought i { animation: none; opacity: 1; }
   .content.enter, .content.enter-late, .content.enter-next, .content.enter-prev { animation: fade .15s both; }
+  .content.bump-next, .content.bump-prev { animation: none; }
   .rail-icon.pop { animation: none; }
   .btn-round, .btn-ghost, .chip, .set-icon-btn, .set-seg button, .set-swatch, .set-mod, .set-bg, .set-tile { transform: none !important; }
 }

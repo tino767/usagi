@@ -83,7 +83,7 @@ function makeCtx(id) {
 
 let rotation;
 catalog.set(SYSTEM_ID, createSettings({ catalog, getRotation: () => rotation, prefs, bridge, island }));
-rotation = createRotation({ island, store, catalog, makeCtx });
+rotation = createRotation({ island, store, catalog, makeCtx, face: face.reactions('rotation') });
 rotation.start();
 
 bridge.onToggle?.(() => island.toggle());

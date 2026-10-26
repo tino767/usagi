@@ -1,20 +1,26 @@
 // The rotation: which modules are in usagi's list, which one is showing,
-// scroll-to-switch, and the position rail on the right. A module marked
+// scroll-to-switch (it stops at both ends: scrolling past one nudges the
+// content and usagi shakes his head), and the position rail on the right. A module marked
 // `secret` (Ask usagi) is never in the list: pulling usagi down by his face
-// shows it as a detour, and scrolling away or closing returns to the list.
+// shows it as a detour, and scrolling away, pushing him back up or closing
+// returns to the list.
 
 import { h } from './dom.js';
 
 export const SYSTEM_ID = 'settings';
 const WHEEL_GAP_MS = 380;
+// wheel events closer together than this are one gesture (a flick, a trackpad's momentum)
+const GESTURE_GAP_MS = 250;
 
-export function createRotation({ island, store, catalog, makeCtx }) {
+export function createRotation({ island, store, catalog, makeCtx, face }) {
   let order = [];
   let index = 0;
   let currentId = null;
   let visiting = null; // the secret module, while it's showing
   const secretId = [...catalog.values()].find((def) => def.secret)?.id ?? null;
   let lastWheel = 0;
+  let lastWheelEvent = 0;
+  let shookThisGesture = false;
   const instances = new Map();
 
   const ids = () => [...order, SYSTEM_ID];
@@ -108,16 +114,27 @@ export function createRotation({ island, store, catalog, makeCtx }) {
   function step(dir) {
     // leaving the secret page goes back to the module it was pulled from
     if (visiting) { visiting = null; render({ dir }); return; }
-    const n = ids().length;
-    go((index + dir + n) % n, dir);
+    const i = index + dir;
+    if (i < 0 || i >= ids().length) { bump(dir); return; }
+    go(i, dir);
+  }
+
+  // Past either end: the content leans the way it would have gone and springs
+  // back, and usagi shakes his head, once per gesture so a long flick into
+  // the end doesn't keep him at it.
+  function bump(dir) {
+    island.animateContent(dir > 0 ? 'bump-next' : 'bump-prev');
+    if (!shookThisGesture) { shookThisGesture = true; face?.shake(500); }
   }
 
   island.onWheel((e) => {
     if (island.mode !== 'open') return;
+    const now = performance.now();
+    if (now - lastWheelEvent > GESTURE_GAP_MS) shookThisGesture = false;
+    lastWheelEvent = now;
     const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     if (Math.abs(d) < 4) return;
     if (scrollsInside(e.target, island.content, d)) return;
-    const now = performance.now();
     if (now - lastWheel < WHEEL_GAP_MS) return;
     lastWheel = now;
     step(d > 0 ? 1 : -1);
@@ -135,6 +152,13 @@ export function createRotation({ island, store, catalog, makeCtx }) {
   island.onPull(() => {
     if (!secretId || island.mode !== 'open' || visiting) return;
     visiting = secretId;
+    render();
+  });
+
+  // pushing him back up leaves it, the same as scrolling away
+  island.onPush(() => {
+    if (!visiting || island.mode !== 'open') return;
+    visiting = null;
     render();
   });
 
