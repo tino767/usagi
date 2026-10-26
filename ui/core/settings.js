@@ -163,7 +163,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
 
       function home() {
         const rotation = getRotation();
-        const total = [...catalog.keys()].filter((id) => id !== SYSTEM_ID).length;
+        const total = [...catalog.values()].filter((d) => d.id !== SYSTEM_ID && !d.secret).length;
         const bg = BACKGROUNDS.find(([v]) => v === prefs.get('background'))?.[1] ?? 'Solid';
         const tiles = [
           ['modules', 'Modules', icons.grid, `${rotation.size()} of ${total} on`],
@@ -184,7 +184,7 @@ export function createSettings({ catalog, getRotation, prefs, bridge, island }) 
 
       function modulesPage() {
         const rotation = getRotation();
-        const defs = [...catalog.values()].filter((d) => d.id !== SYSTEM_ID);
+        const defs = [...catalog.values()].filter((d) => d.id !== SYSTEM_ID && !d.secret);
         const grid = h('div', { class: 'set-grid' });
         const meta = h('span', { class: 'set-meta' });
 

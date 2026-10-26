@@ -12,6 +12,7 @@ export default {
   order: 10,                     // default position on first run
   styles: false,                 // true → loads ./style.css next to this file
   // keepFace: true,             // never auto-hide the face while this module is showing
+  // secret: true,               // never listed: shown only by pulling usagi down by his face (see ask)
 
   // Called once when the module joins the rotation (also at startup), and it
   // keeps living while other modules are showing — timers, listeners and

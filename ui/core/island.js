@@ -9,6 +9,11 @@
 // and his ears hidden above the screen edge. A module can summon him
 // (setSummon): while it's showing he slides down into full view, and clicking
 // him goes to the module instead of closing. He tucks back up when it's gone.
+// He can also be pulled down by his face, as far as you like, against more and
+// more tension, stretching the island with him once he reaches its bottom. From
+// there on his eyes close to "= ㅅ =", and letting go fires onPull (rotation.js
+// uses it for the secret Ask usagi page); either way he and the island snap
+// back like a rubber band.
 // With face auto-hide on (setFaceHide), the tab also slides up off screen while
 // the island sits open and idle, and the island gets TUCK px shorter.
 
@@ -47,19 +52,33 @@ const REVEAL_H = { shown: 56, tucked: 24 };
 const EAR_L = '<svg class="ear ear-l" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 0H17V16H16A16 16 0 0 0 0 0Z"/></svg>';
 const EAR_R = '<svg class="ear ear-r" viewBox="0 0 16 16" aria-hidden="true"><path d="M16 0H-1V16H0A16 16 0 0 1 16 0Z"/></svg>';
 // usagi's ears, standing on top of his head (the head's top is y 200; the extra
-// unit tucks under it). Far longer than the island is tall: even summoned, the
-// tips stay past the screen edge, so they seem to go on forever. Earrings low
-// on the right ear, where they show while he's summoned.
-const BUNNY_EARS = `<svg class="bunny-ears" viewBox="0 0 168 201" aria-hidden="true">
-  <path fill="var(--paper)" d="M0 24.5A24.5 24.5 0 0 1 24.5 0H33.8A24.5 24.5 0 0 1 58.3 24.5V201H0Z"/>
-  <path fill="var(--paper)" d="M109.7 24.5A24.5 24.5 0 0 1 134.2 0H143.5A24.5 24.5 0 0 1 168 24.5V201H109.7Z"/>
-  <path fill="var(--tongue)" d="M16.3 200V29.65A12.85 12.85 0 0 1 42 29.65V200Z"/>
-  <path fill="var(--tongue)" d="M126 200V29.65A12.85 12.85 0 0 1 151.7 29.65V200Z"/>
+// unit tucks under it). 1000 long, far more than the window is tall: however far
+// he's pulled down, the tips stay past the screen edge, so they seem to go on
+// forever and keep stretching as he comes down. Earrings low on the right ear,
+// where they show while he's summoned.
+const BUNNY_EARS = `<svg class="bunny-ears" viewBox="0 -800 168 1001" aria-hidden="true">
+  <path fill="var(--paper)" d="M0 -775.5A24.5 24.5 0 0 1 24.5 -800H33.8A24.5 24.5 0 0 1 58.3 -775.5V201H0Z"/>
+  <path fill="var(--paper)" d="M109.7 -775.5A24.5 24.5 0 0 1 134.2 -800H143.5A24.5 24.5 0 0 1 168 -775.5V201H109.7Z"/>
+  <path fill="var(--tongue)" d="M16.3 200V-770.35A12.85 12.85 0 0 1 42 -770.35V200Z"/>
+  <path fill="var(--tongue)" d="M126 200V-770.35A12.85 12.85 0 0 1 151.7 -770.35V200Z"/>
   <circle fill="var(--earring)" cx="168" cy="164.7" r="5"/>
   <circle fill="var(--earring)" cx="168" cy="181.5" r="5"/>
 </svg>`;
 // Delay before he steps out when the island opens, so it has grown around him first.
 const SUMMON_DELAY = 160;
+// Pulling him down by his face. The first px follow the cursor 1:1, then each
+// gives less (PULL_K sets how soon), but it never stops giving.
+const PULL_K = 240;
+const PULL_SLOP = 4; // cursor travel before a press is a drag, not a click
+const PULL_FADE = 72; // the module's content is gone once he's this far down
+const TAB_H = 48;
+const INSET = 22; // the content inset: the island grows once his chin is this close to its bottom
+const SUMMONED_Y = 118; // keep in sync with .summoned .tab in styles.css
+// The snap back: a damped spring (rad/s, damping ratio), so he overshoots and
+// wobbles, more the further he was pulled.
+const SPRING_W = 18;
+const SPRING_Z = 0.32;
+const at = (y) => `translateX(-50%) translateY(${y.toFixed(1)}px)`;
 
 export function createIsland({ root, face, bridge }) {
   let mode = 'inactive';
@@ -81,11 +100,18 @@ export function createIsland({ root, face, bridge }) {
   let dotsPulse = true;
   let summon = null; // { label, click } from the showing module
   let summonTimer = 0;
+  // pulling him down
+  let pull = null; // { id, startY, from, rest, y, dragged } while he's held by his face
+  let spring = 0; // the snap-back's animation frame
+  let swallowClick = false;
+  const pullListeners = new Set();
 
   const peekFace = h('span');
   const tabFace = h('span');
+  const tabSquint = h('span', { class: 'squint' }); // "= ㅅ =" while a pull is armed
   face.mount(peekFace, 'closed');
   face.mount(tabFace, 'open');
+  face.mount(tabSquint, 'closed');
 
   // glass background: the blurred screen behind the island (drawn by glass.js)
   const frost = h('canvas');
@@ -98,15 +124,23 @@ export function createIsland({ root, face, bridge }) {
   const statuses = new Map(); // owner → text; the oldest still-set owner keeps the slot
   const peek = h('button', { class: 'peek', 'aria-label': 'Open usagi', onclick: () => setMode('open') }, peekFace);
   // the tab is the bottom of his head; the body runs up past the screen edge
-  const body = h('span', { class: 'bunny' }, svg(BUNNY_EARS), tabFace);
+  const body = h('span', { class: 'bunny' }, svg(BUNNY_EARS), tabFace, tabSquint);
   const tab = h('button', {
     class: 'tab',
     'aria-label': 'Close usagi',
-    onclick: () => (summon && mode === 'open' ? summon.click() : setMode(near ? 'welcome' : 'inactive')),
+    onclick: () => {
+      if (swallowClick) return; // the end of a pull, not a click
+      if (summon && mode === 'open') summon.click();
+      else setMode(near ? 'welcome' : 'inactive');
+    },
   }, body);
   // he blinks when the cursor finds him, so the face reads as the thing to click
   const own = face.reactions('island');
   tab.addEventListener('pointerenter', () => own.blink());
+  tab.addEventListener('pointerdown', grab);
+  tab.addEventListener('pointermove', drag);
+  tab.addEventListener('pointerup', (e) => letGo(e, true));
+  tab.addEventListener('lostpointercapture', (e) => letGo(e, false));
   const content = h('div', { class: 'content' });
   const railLeft = h('div', { class: 'rail rail-left' });
   const railRight = h('div', { class: 'rail rail-right' });
@@ -142,6 +176,94 @@ export function createIsland({ root, face, bridge }) {
     else island.classList.toggle('summoned', out);
   }
 
+  // ---- pulling him down by his face ----
+  // He slides down inside the island first, and once his chin reaches its
+  // bottom inset the island stretches with him (--stretch: extra height under
+  // its bottom). The module's content stays put and fades out as he leaves his
+  // rest spot, and it all springs back together. While held (.pulling) the tab's CSS transition is off and
+  // it's set here every frame, so class changes underneath (summoned) don't
+  // start a transition that would fight it.
+  const tabY = () => new DOMMatrix(getComputedStyle(tab).transform).f;
+
+  // y: where he is; rest: where he'd sit (0, or SUMMONED_Y), for the fade
+  function place(y, rest) {
+    const base = parseFloat(island.style.getPropertyValue('--h')) || SIZES.open.h;
+    const stretch = Math.max(0, y + TAB_H + INSET - base);
+    const fade = Math.max(0, y - rest) / PULL_FADE;
+    tab.style.transform = at(y);
+    island.style.setProperty('--stretch', `${stretch.toFixed(1)}px`);
+    content.style.opacity = fade ? Math.max(0, 1 - fade).toFixed(3) : '';
+    return stretch;
+  }
+
+  function grab(e) {
+    if (e.button !== 0 || mode !== 'open' || tucked) return;
+    const from = tabY(); // mid-wobble included
+    const rest = island.classList.contains('summoned') ? SUMMONED_Y : 0;
+    if (spring) {
+      cancelAnimationFrame(spring);
+      spring = 0;
+      place(from, rest);
+    }
+    pull = { id: e.pointerId, startY: e.clientY, from, rest, y: from, dragged: false };
+    tab.setPointerCapture(e.pointerId);
+  }
+
+  function drag(e) {
+    if (!pull || e.pointerId !== pull.id) return;
+    const dy = (e.clientY - pull.startY) / scale;
+    if (!pull.dragged) {
+      if (Math.abs(dy) < PULL_SLOP) return;
+      pull.dragged = true;
+      island.classList.add('pulling');
+    }
+    // no further than the island's bottom staying inside the window
+    const maxY = Math.max(pull.from, window.innerHeight / scale - 8 - TAB_H - INSET);
+    pull.y = Math.min(pull.from + PULL_K * Math.log1p(Math.max(0, dy) / PULL_K), maxY);
+    // armed once the island has to grow to hold him: letting go now counts
+    island.classList.toggle('pull-armed', place(pull.y, pull.rest) > 0);
+  }
+
+  function letGo(e, released) {
+    if (!pull || e.pointerId !== pull.id) return;
+    const { y, dragged } = pull;
+    const armed = island.classList.contains('pull-armed');
+    island.classList.remove('pull-armed');
+    pull = null;
+    if (!island.classList.contains('pulling')) return; // a plain click
+    if (dragged) {
+      swallowClick = true;
+      setTimeout(() => { swallowClick = false; });
+    }
+    if (released && armed) pullListeners.forEach((fn) => fn());
+    tab.style.removeProperty('transform');
+    snap(y, tabY());
+  }
+
+  // A damped spring from y to `to` (g runs 1 → 0, overshooting); the island
+  // follows his chin and the content fades back in as he settles.
+  function snap(y, to) {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const decay = SPRING_Z * SPRING_W;
+    const wd = SPRING_W * Math.sqrt(1 - SPRING_Z * SPRING_Z);
+    const start = performance.now();
+    const step = (now) => {
+      const t = (now - start) / 1000;
+      const env = Math.exp(-decay * t);
+      if (reduced || Math.abs(y - to) * env < 0.5) {
+        spring = 0;
+        place(to, to);
+        tab.style.removeProperty('transform');
+        island.classList.remove('pulling');
+        return;
+      }
+      const g = env * (Math.cos(wd * t) + (decay / wd) * Math.sin(wd * t));
+      place(to + (y - to) * g, to);
+      spring = requestAnimationFrame(step);
+    };
+    step(start);
+  }
+
   function setMode(next) {
     if (next === mode) return;
     const prev = mode;
@@ -165,7 +287,7 @@ export function createIsland({ root, face, bridge }) {
 
   function updateTuck(now) {
     // Not eligible to hide: keep the face up and restart the idle clock.
-    if (mode !== 'open' || faceMode !== 'idle' || facePinned || summon || atTop) {
+    if (mode !== 'open' || faceMode !== 'idle' || facePinned || summon || pull || atTop) {
       lastTop = now;
       setTucked(false);
       return;
@@ -194,7 +316,8 @@ export function createIsland({ root, face, bridge }) {
     atTop = mode === 'open' && Math.abs(x - cx) <= (REVEAL_W / 2) * scale && y >= -8 && y <= revealH * scale;
     if (atTop) { lastTop = performance.now(); setTucked(false); }
     settle();
-    const hit = hitTest(x, y);
+    // held by his face: keep the window taking the cursor wherever it goes
+    const hit = !!pull || hitTest(x, y);
     if (hit !== interactive) {
       interactive = hit;
       bridge.setInteractive?.(hit);
@@ -221,6 +344,8 @@ export function createIsland({ root, face, bridge }) {
     toggle() { setMode(mode === 'open' ? 'inactive' : 'open'); },
     onMode(fn) { modeListeners.add(fn); return () => modeListeners.delete(fn); },
     onWheel(fn) { island.addEventListener('wheel', fn, { passive: true }); },
+    /** He was pulled down by his face and let go (fires before he snaps back). */
+    onPull(fn) { pullListeners.add(fn); return () => pullListeners.delete(fn); },
     setOpenSize(size) { openSize = size; applySize(); },
     /** The showing module's { label, click } to bring usagi out in full, or null. */
     setSummon(next) {

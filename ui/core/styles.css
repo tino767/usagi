@@ -67,8 +67,12 @@ button svg { pointer-events: none; }
   /* face auto-hide: the open face tab slides off screen and the content moves
      up into its place, and the rails go with it */
   --tuck: 0px;
+  /* pulling usagi down (island.js) stretches the open island with him: extra
+     height as bottom padding, so the height transition above stays out of it */
+  --stretch: 0px;
 }
 .island.tucked { --tuck: 48px; }
+[data-mode="open"] .island { padding-bottom: var(--stretch); }
 /* drop shadow (Settings › Appearance): light from above, so it falls below the
    island and stays off its sides, where the island melts into the screen edge.
    Each layer reaches further down and blurs wider, and its negative spread pulls
@@ -200,13 +204,22 @@ button svg { pointer-events: none; }
   position: absolute; left: 0; bottom: 0; width: 100%; height: 84px;
   background: var(--paper); border-radius: 0 0 24px 24px;
 }
-.bunny-ears { position: absolute; left: 0; bottom: calc(100% - 1px); width: 168px; height: 201px; overflow: visible; }
+.bunny-ears { position: absolute; left: 0; bottom: calc(100% - 1px); width: 168px; height: 1001px; overflow: visible; }
 .tab .face { position: absolute; left: 24px; bottom: 8.5px; width: 120px; height: 31px; }
+/* pulled far enough to count (island.js): his eyes squeeze to the peek's "= ㅅ =" */
+.tab .squint, .pull-armed .tab .face:not(.squint) { visibility: hidden; }
+.pull-armed .tab .squint { visibility: visible; }
 /* summoned: slides straight down, full size, until his chin is 22px off the
    island's bottom, the same inset as every module's content; his ears still
-   run up past the screen edge. Above the content so clicks reach him */
+   run up past the screen edge. Above the content so clicks reach him.
+   118 is SUMMONED_Y in island.js */
 .tucked .tab { transform: translateX(-50%) translateY(-52px); }
 .summoned .tab { z-index: 1; transform: translateX(-50%) translateY(118px); }
+/* held by his face and snapping back (island.js drives the transform and the
+   island's --stretch), over whatever module is showing */
+.tab { touch-action: none; }
+.pulling .tab { z-index: 2; transition: none; }
+.pulling .tab:active { cursor: grabbing; }
 
 .face { display: block; line-height: 0; transition: transform 90ms linear; }
 .face svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -226,7 +239,9 @@ button svg { pointer-events: none; }
 .thought i:nth-child(2) { animation-delay: .15s; }
 .thought i:nth-child(3) { animation-delay: .3s; }
 
-.content { position: absolute; left: 22px; right: 22px; top: calc(70px - var(--tuck)); bottom: 22px; transition: top .45s var(--spring); }
+/* stays put while usagi is pulled and the island stretches under it
+   (--stretch); island.js fades it out as he comes down */
+.content { position: absolute; left: 22px; right: 22px; top: calc(70px - var(--tuck)); bottom: calc(22px + var(--stretch)); transition: top .45s var(--spring); }
 [data-mode="open"] .content { display: block; }
 .content.enter { animation: enter .3s var(--spring) both; }
 .content.enter-late { animation: enter .32s var(--spring) .18s both; }

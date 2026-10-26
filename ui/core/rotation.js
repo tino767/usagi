@@ -1,5 +1,7 @@
 // The rotation: which modules are in usagi's list, which one is showing,
-// scroll-to-switch, and the position rail on the right.
+// scroll-to-switch, and the position rail on the right. A module marked
+// `secret` (Ask usagi) is never in the list: pulling usagi down by his face
+// shows it as a detour, and scrolling away or closing returns to the list.
 
 import { h } from './dom.js';
 
@@ -10,6 +12,8 @@ export function createRotation({ island, store, catalog, makeCtx }) {
   let order = [];
   let index = 0;
   let currentId = null;
+  let visiting = null; // the secret module, while it's showing
+  const secretId = [...catalog.values()].find((def) => def.secret)?.id ?? null;
   let lastWheel = 0;
   const instances = new Map();
 
@@ -48,19 +52,19 @@ export function createRotation({ island, store, catalog, makeCtx }) {
   let dots = [];
   island.railRight.append(railIcon);
 
-  function renderRail(list) {
+  function renderRail(list, id) {
     if (dots.length !== list.length) {
       dots.forEach((d) => d.remove());
       dots = list.map((_, i) => h('button', { class: 'dot', onclick: () => go(i) }, h('span')));
       island.railRight.append(...dots);
     }
     dots.forEach((d, i) => {
-      const on = i === index;
+      const on = !visiting && i === index;
       d.classList.toggle('on', on);
       d.setAttribute('aria-label', `Show ${catalog.get(list[i])?.name ?? list[i]}`);
       if (on) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
     });
-    const icon = catalog.get(list[index])?.icon ?? '';
+    const icon = catalog.get(id)?.icon ?? '';
     if (railIcon.innerHTML !== icon) {
       railIcon.innerHTML = icon;
       railIcon.classList.remove('pop');
@@ -73,7 +77,7 @@ export function createRotation({ island, store, catalog, makeCtx }) {
   function render({ animate = true, dir = 0 } = {}) {
     const list = ids();
     index = Math.max(0, Math.min(index, list.length - 1));
-    const id = list[index];
+    const id = visiting ?? list[index];
     const inst = instance(id);
     const open = island.mode === 'open';
 
@@ -90,7 +94,7 @@ export function createRotation({ island, store, catalog, makeCtx }) {
     }
     applySize();
     island.pinFace(!!catalog.get(id)?.keepFace);
-    renderRail(list);
+    renderRail(list, id);
   }
 
   // Every module shares the open island's size. Only Settings sets its own
@@ -100,8 +104,13 @@ export function createRotation({ island, store, catalog, makeCtx }) {
     island.setOpenSize(inst?.size?.() || null);
   }
 
-  function go(i, dir = Math.sign(i - index)) { index = i; render({ dir }); }
-  function step(dir) { const n = ids().length; go((index + dir + n) % n, dir); }
+  function go(i, dir = Math.sign(i - index)) { visiting = null; index = i; render({ dir }); }
+  function step(dir) {
+    // leaving the secret page goes back to the module it was pulled from
+    if (visiting) { visiting = null; render({ dir }); return; }
+    const n = ids().length;
+    go((index + dir + n) % n, dir);
+  }
 
   island.onWheel((e) => {
     if (island.mode !== 'open') return;
@@ -117,19 +126,28 @@ export function createRotation({ island, store, catalog, makeCtx }) {
   island.onMode((mode, prev) => {
     const inst = instances.get(currentId);
     if (mode === 'open') { inst?.show?.(); island.animateContent('open'); }
-    else if (prev === 'open') inst?.hide?.();
+    else if (prev === 'open') {
+      inst?.hide?.();
+      if (visiting) { visiting = null; render({ animate: false }); }
+    }
+  });
+
+  island.onPull(() => {
+    if (!secretId || island.mode !== 'open' || visiting) return;
+    visiting = secretId;
+    render();
   });
 
   return {
     start() {
       const saved = store.get('rotation', null);
-      const all = [...catalog.keys()].filter((id) => id !== SYSTEM_ID);
-      order = (saved ?? all).filter((id) => catalog.has(id) && id !== SYSTEM_ID);
+      const listed = (id) => catalog.has(id) && id !== SYSTEM_ID && !catalog.get(id).secret;
+      order = (saved ?? [...catalog.keys()]).filter(listed);
       order.forEach(instance); // create up front so modules can run in the background
       render({ animate: false });
     },
     add(id) {
-      if (order.includes(id) || !catalog.has(id) || id === SYSTEM_ID) return;
+      if (order.includes(id) || !catalog.has(id) || id === SYSTEM_ID || catalog.get(id).secret) return;
       order.push(id);
       instance(id);
       save();

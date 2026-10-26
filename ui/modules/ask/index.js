@@ -1,7 +1,9 @@
-// Ask usagi — a magic 8-ball. While this module is showing, usagi steps out of
-// his tab in full view; click him with a question in mind and his face bobs
-// down and up (yes), slides side to side (no) or blinks, puzzled, with a "…"
-// between his ears (maybe). The prompt sits on his left, his answer on his right.
+// Ask usagi — a magic 8-ball, and an easter egg: it's never in the rotation or
+// Settings › Modules (secret). Pull usagi down by his face and let go, and he
+// snaps back out in full view with this page showing. Click him with a question
+// in mind and his face bobs down and up (yes), slides side to side (no) or
+// blinks, puzzled, with a "…" between his ears (maybe). The prompt sits on his
+// left, his answer on his right.
 
 import { icons } from '../../core/icons.js';
 
@@ -14,7 +16,7 @@ export default {
   name: 'Ask usagi',
   description: 'Yes, no or maybe: click usagi for an answer',
   icon: icons.ask,
-  order: 4,
+  secret: true,
   styles: true,
 
   create(ctx) {
