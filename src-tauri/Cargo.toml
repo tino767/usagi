@@ -4,6 +4,7 @@ version = "0.2.0"
 description = "A desktop companion that lives in the top edge of your screen."
 authors = ["Valentino Valero"]
 license-file = "../LICENSE"
+publish = false
 repository = "https://github.com/tino767/usagi"
 edition = "2021"
 rust-version = "1.77"
