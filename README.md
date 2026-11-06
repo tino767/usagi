@@ -110,9 +110,9 @@ fighting. While a module has him summoned, his face belongs to it alone.
 
 **Staying on top of everything.** On Windows he re-claims the topmost spot every
 second, since other always-on-top apps can push him down, and hides over fullscreen
-games and presentations. On macOS he sits above the menu bar at
-`NSPopUpMenuWindowLevel`, so on a notched Mac he lines up with the notch, and follows
-you across Spaces and fullscreen apps.
+games and presentations. The macOS build, not yet run on real hardware, sits above
+the menu bar at `NSPopUpMenuWindowLevel`, which should line him up with a notch and
+follow you across Spaces and fullscreen apps.
 
 ### Architecture
 
@@ -264,6 +264,9 @@ call it from `ui/core/bridge.js`, and pass it through `ctx.system` in `app.js`.
 
 ## Platform support
 
+Windows is the tested platform. The macOS and Linux columns show what's implemented
+and compiling in CI, but neither has been run on real hardware yet.
+
 | | Windows 10/11 | macOS 12+ | Linux (X11) |
 |---|---|---|---|
 | Now playing + controls | Any app in the media flyout | Spotify, Apple Music | Any MPRIS player |
@@ -279,9 +282,9 @@ call it from `ui/core/bridge.js`, and pass it through `ctx.system` in `app.js`.
 
 ## Status
 
-Version 0.2.0, in active development. It runs on Windows and Linux. macOS is
-type-checked but hasn't been run on real hardware yet, so expect small fixes the first
-time you build there.
+Version 0.2.0, in active development. usagi has only been run on Windows so far. The
+macOS and Linux backends are written and compile in CI on every push, but they haven't
+been run on real hardware yet, so expect small fixes the first time you build there.
 
 ## License
 
