@@ -2,7 +2,8 @@
 
 <p align="center">
   <strong>A tiny rabbit who lives in the top edge of your screen.</strong><br>
-  A desktop companion and a home for small utilities, merged into the screen edge like a dynamic island.
+  A desktop companion and a home for small utilities, merged into the screen edge like a dynamic island.<br>
+  Designed and built by <a href="https://v2.orelav.net/">Valentino Valero</a> · <a href="https://www.linkedin.com/in/valentino-valero/">LinkedIn</a>
 </p>
 
 <p align="center">
