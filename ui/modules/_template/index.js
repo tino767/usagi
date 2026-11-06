@@ -1,4 +1,4 @@
-// Copy this folder to src/renderer/modules/<your-id>/ (no leading underscore),
+// Copy this folder to ui/modules/<your-id>/ (no leading underscore),
 // change `id` to match the folder name, restart usagi, then add it from the
 // Settings › Modules page. Folders starting with "_" are ignored by the loader.
 

@@ -53,15 +53,29 @@ pub use linux::*;
 #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 mod fallback {
     use super::Media;
-    pub fn media() -> Result<Media, String> { Ok(Media::default()) }
-    pub fn thumbnail() -> Option<String> { None }
-    pub fn media_command(_cmd: &str) -> Result<bool, String> { Ok(false) }
-    pub fn volume() -> Result<f32, String> { Err("unsupported".into()) }
-    pub fn set_volume(_v: f32) -> Result<(), String> { Err("unsupported".into()) }
+    pub fn media() -> Result<Media, String> {
+        Ok(Media::default())
+    }
+    pub fn thumbnail() -> Option<String> {
+        None
+    }
+    pub fn media_command(_cmd: &str) -> Result<bool, String> {
+        Ok(false)
+    }
+    pub fn volume() -> Result<f32, String> {
+        Err("unsupported".into())
+    }
+    pub fn set_volume(_v: f32) -> Result<(), String> {
+        Err("unsupported".into())
+    }
     pub struct Backdrop;
     impl Backdrop {
-        pub fn open(_at: super::Rect) -> Result<Self, String> { Err("unsupported".into()) }
-        pub fn next(&mut self, _r: super::Rect, _w: i32, _h: i32, _f: bool) -> Result<Option<Vec<u8>>, String> { Ok(None) }
+        pub fn open(_at: super::Rect) -> Result<Self, String> {
+            Err("unsupported".into())
+        }
+        pub fn next(&mut self, _r: super::Rect, _w: i32, _h: i32, _f: bool) -> Result<Option<Vec<u8>>, String> {
+            Ok(None)
+        }
     }
 }
 #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]

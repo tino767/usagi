@@ -2,13 +2,13 @@
 // Spotify, browsers, etc.) and Core Audio for master volume.
 
 use base64::Engine;
+use windows::core::Interface;
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSession as Session,
     GlobalSystemMediaTransportControlsSessionManager as SessionManager,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus as PlaybackStatus,
 };
 use windows::Storage::Streams::DataReader;
-use windows::core::Interface;
 use windows::Win32::Foundation::HMODULE;
 use windows::Win32::Graphics::Direct3D::D3D_DRIVER_TYPE_UNKNOWN;
 use windows::Win32::Graphics::Direct3D11::{
@@ -255,7 +255,8 @@ impl Dupl {
                     o += 1;
                     let desc = output.GetDesc()?;
                     let rc = desc.DesktopCoordinates;
-                    if !desc.AttachedToDesktop.as_bool() || x < rc.left || x >= rc.right || y < rc.top || y >= rc.bottom {
+                    if !desc.AttachedToDesktop.as_bool() || x < rc.left || x >= rc.right || y < rc.top || y >= rc.bottom
+                    {
                         continue;
                     }
                     // duplication needs a device on the adapter that drives this display
@@ -326,7 +327,8 @@ impl Dupl {
             self.staging = Some((texture(&self.device, sw, sh, true)?, sw, sh));
         }
         let staging = &self.staging.as_ref().unwrap().0;
-        let region = D3D11_BOX { left: x0 as u32, top: y0 as u32, front: 0, right: x1 as u32, bottom: y1 as u32, back: 1 };
+        let region =
+            D3D11_BOX { left: x0 as u32, top: y0 as u32, front: 0, right: x1 as u32, bottom: y1 as u32, back: 1 };
         unsafe {
             self.ctx.CopySubresourceRegion(staging, 0, 0, 0, 0, &self.frame, 0, Some(&region));
             let mut map = D3D11_MAPPED_SUBRESOURCE::default();

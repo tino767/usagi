@@ -53,10 +53,7 @@ struct Found {
 }
 
 fn find_player(c: &Connection) -> Result<Option<Found>, String> {
-    let names = DBusProxy::new(c)
-        .map_err(|e| e.to_string())?
-        .list_names()
-        .map_err(|e| e.to_string())?;
+    let names = DBusProxy::new(c).map_err(|e| e.to_string())?.list_names().map_err(|e| e.to_string())?;
     let mut found: Vec<Found> = names
         .into_iter()
         .map(|n| n.to_string())
@@ -144,10 +141,7 @@ pub fn media_command(cmd: &str) -> Result<bool, String> {
         _ => return Ok(false),
     };
     let c = conn()?;
-    player(&c, &name)
-        .and_then(|p| p.call_method(method, &()))
-        .map(|_| true)
-        .map_err(|e| e.to_string())
+    player(&c, &name).and_then(|p| p.call_method(method, &())).map(|_| true).map_err(|e| e.to_string())
 }
 
 fn run(cmd: &str, args: &[&str]) -> Option<String> {
@@ -177,9 +171,7 @@ pub fn set_volume(v: f32) -> Result<(), String> {
         return Ok(());
     }
     let pct = format!("{}%", (v * 100.0).round() as i32);
-    run("pactl", &["set-sink-volume", "@DEFAULT_SINK@", &pct])
-        .map(|_| ())
-        .ok_or_else(|| "no wpctl or pactl".into())
+    run("pactl", &["set-sink-volume", "@DEFAULT_SINK@", &pct]).map(|_| ()).ok_or_else(|| "no wpctl or pactl".into())
 }
 
 /// Live copies of the screen under a rect, for the glass background.

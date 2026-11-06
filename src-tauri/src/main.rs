@@ -12,9 +12,9 @@ use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use tauri::ipc::{Channel, InvokeResponseBody};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::ipc::{Channel, InvokeResponseBody};
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 use tauri_plugin_global_shortcut::ShortcutState;
@@ -75,9 +75,7 @@ async fn media_command(app: AppHandle, cmd: String) -> Result<bool, String> {
 
 #[tauri::command]
 async fn volume_get() -> Result<f32, String> {
-    tauri::async_runtime::spawn_blocking(system::volume)
-        .await
-        .map_err(|e| e.to_string())?
+    tauri::async_runtime::spawn_blocking(system::volume).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -125,7 +123,12 @@ struct Glass {
     running: bool,
 }
 
-fn glass_target(window: &WebviewWindow, rect: &CssRect, out_w: i32, out_h: i32) -> Result<(system::Rect, i32, i32), String> {
+fn glass_target(
+    window: &WebviewWindow,
+    rect: &CssRect,
+    out_w: i32,
+    out_h: i32,
+) -> Result<(system::Rect, i32, i32), String> {
     Ok((rect.to_screen(window)?, out_w.clamp(1, 512), out_h.clamp(1, 512)))
 }
 
@@ -205,7 +208,13 @@ async fn glass_start(
 
 /// Glass background: the island moved or resized.
 #[tauri::command]
-fn glass_move(window: WebviewWindow, state: tauri::State<'_, GlassState>, rect: CssRect, out_w: i32, out_h: i32) -> Result<(), String> {
+fn glass_move(
+    window: WebviewWindow,
+    state: tauri::State<'_, GlassState>,
+    rect: CssRect,
+    out_w: i32,
+    out_h: i32,
+) -> Result<(), String> {
     let target = glass_target(&window, &rect, out_w, out_h)?;
     let mut g = state.0.lock().unwrap();
     if g.target.is_some() {
@@ -254,28 +263,28 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let sep2 = PredefinedMenuItem::separator(app)?;
     let menu = Menu::with_items(app, &[&open, &sep1, &reload, &devtools, &sep2, &quit])?;
 
-    let mut tray = TrayIconBuilder::with_id("usagi")
-        .tooltip("usagi")
-        .menu(&menu)
-        .show_menu_on_left_click(true)
-        .on_menu_event(move |app, event| match event.id().as_ref() {
-            "open" => {
-                let _ = app.emit("toggle", ());
-            }
-            "reload" => {
-                if let Some(w) = app.get_webview_window("main") {
-                    let _ = w.eval("location.reload()");
+    let mut tray =
+        TrayIconBuilder::with_id("usagi").tooltip("usagi").menu(&menu).show_menu_on_left_click(true).on_menu_event(
+            move |app, event| match event.id().as_ref() {
+                "open" => {
+                    let _ = app.emit("toggle", ());
                 }
-            }
-            "devtools" => {
-                #[cfg(debug_assertions)]
-                if let Some(w) = app.get_webview_window("main") {
-                    w.open_devtools();
+                "reload" => {
+                    if let Some(w) = app.get_webview_window("main") {
+                        let _ = w.eval("location.reload()");
+                    }
                 }
-            }
-            "quit" => app.exit(0),
-            _ => {}
-        });
+                "devtools" =>
+                {
+                    #[cfg(debug_assertions)]
+                    if let Some(w) = app.get_webview_window("main") {
+                        w.open_devtools();
+                    }
+                }
+                "quit" => app.exit(0),
+                _ => {}
+            },
+        );
     if let Some(icon) = app.default_window_icon() {
         tray = tray.icon(icon.clone());
     }
